@@ -21,9 +21,13 @@ void Equation::consToPrim()
     case EULER:  //欧拉方程
         {
             if (dim==1) consToPrimEuler1D();
-            else if(dim==2) 
+            else if(dim==2)
             {
                 consToPrimEuler2D();
+            }
+            else if(dim==3)
+            {
+                consToPrimEuler3D();
             }
         }
         break;
@@ -92,6 +96,44 @@ void Equation::consToPrimEuler2D()
         (*prim)(i,1)=u;
         (*prim)(i,2)=v;
         (*prim)(i,3)=p;
+    }
+}
+
+
+/**
+ * @brief 三维欧拉方程的守恒变量到原始变量转换
+ *
+ * 将守恒变量（rho, rho*u, rho*v, rho*w, rho*E）转换为原始变量（rho, u, v, w, p）。
+ * 结构与 consToPrimEuler2D 一致，仅增加 z 向动量/速度分量（三维欧拉 5 变量）。
+ */
+void Equation::consToPrimEuler3D()
+{
+    if(nCons!=5||nPrim!=5)
+    {
+        std::cout<<"Equation error: Euler 3d equation variable number error \n";
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        real r=(*cons)(i,0);    // 密度
+        real ru=(*cons)(i,1);   // x 向动量
+        real rv=(*cons)(i,2);   // y 向动量
+        real rw=(*cons)(i,3);   // z 向动量（三维新增）
+        real rE=(*cons)(i,4);   // 总能
+        real u=ru/r;
+        real v=rv/r;
+        real w=rw/r;
+        real E=rE/r;
+        real q2=(u*u+v*v+w*w)/2;   // 动能（含 w²）
+        real e=-q2+E;
+        real gamma=GAMMA;
+        real RT=(gamma-1)*e;
+        real p=r*RT;
+        (*prim)(i,0)=r;
+        (*prim)(i,1)=u;
+        (*prim)(i,2)=v;
+        (*prim)(i,3)=w;   // z 向速度（三维新增）
+        (*prim)(i,4)=p;
     }
 }
 

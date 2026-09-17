@@ -67,6 +67,7 @@ int Info::nPrim()
         {
             if(dim==1) return 3;
             if(dim==2) return 4;
+            if(dim==3) return 5;   // 三维欧拉：共 5 个变量（在二维基础上增加 z 向分量）
             else return 0;
         }
         break;
@@ -96,6 +97,7 @@ int Info::nCons()
         {
             if(dim==1) return 3;
             if(dim==2) return 4;
+            if(dim==3) return 5;   // 三维欧拉：共 5 个变量（在二维基础上增加 z 向分量）
             else return 0;
         }
         break;
@@ -243,6 +245,14 @@ static std::map<int,std::string> exampleStr2D={
 };
 
 /**
+ * @brief 三维算例标识到字符串的映射表（任务 6 新增）
+ */
+static std::map<int,std::string> exampleStr3D={
+    {0,"3D_TGV"},       // 三维 Taylor-Green 涡
+    {1,"3D_uniform"}    // 均匀场（三维核验用）
+};
+
+/**
  * @brief 生成文件名
  * @return 生成的文件名
  */
@@ -259,6 +269,11 @@ std::string Info::filename()
     } else if (dim == 2) {
         auto it = exampleStr2D.find(nCase);
         if (it != exampleStr2D.end()) {
+            caseName = it->second;
+        }
+    } else if (dim == 3) {
+        auto it = exampleStr3D.find(nCase);
+        if (it != exampleStr3D.end()) {
             caseName = it->second;
         }
     }
@@ -308,6 +323,18 @@ std::vector<std::string> Info::getVarNameListCons()
             res.push_back("rhoE");
         }
     }
+    else if (dim==3)
+    {
+        if(eqType==EULER)
+        {
+            // 三维守恒变量：rho, rhoU, rhoV, rhoW, rhoE
+            res.push_back("rho");
+            res.push_back("rhoU");
+            res.push_back("rhoV");
+            res.push_back("rhoW");
+            res.push_back("rhoE");
+        }
+    }
     return res;
 }
 std::vector<std::string> Info::getVarNameListPrim()
@@ -337,6 +364,18 @@ std::vector<std::string> Info::getVarNameListPrim()
             res.push_back("Pressure");
         }
     }
+    else if (dim==3)
+    {
+        if(eqType==EULER)
+        {
+            // 三维原始变量：密度、三个方向速度、压力
+            res.push_back("Density");
+            res.push_back("XVelocity");
+            res.push_back("YVelocity");
+            res.push_back("ZVelocity");
+            res.push_back("Pressure");
+        }
+    }
     return res;
 }
 
@@ -361,6 +400,18 @@ std::vector<std::string> Info::getVarNameListRhs()
             res.push_back("RHS-rho");
             res.push_back("RHS-rhoU");
             res.push_back("RHS-rhoV");
+            res.push_back("RHS-rhoE");
+        }
+    }
+    else if (dim==3)
+    {
+        if(eqType==EULER)
+        {
+            // 三维右端项变量名（与守恒变量一一对应）
+            res.push_back("RHS-rho");
+            res.push_back("RHS-rhoU");
+            res.push_back("RHS-rhoV");
+            res.push_back("RHS-rhoW");
             res.push_back("RHS-rhoE");
         }
     }
