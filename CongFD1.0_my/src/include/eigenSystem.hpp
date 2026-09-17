@@ -193,3 +193,57 @@ class eigensystemEuler1D
 //     res[15]=h+ek+Vn*c;
 //     return res;
 // }
+
+/* ================= 三维（任务 4 新增；与上面 2D 类逐行对应） ================= */
+
+/**
+ * @brief 三维欧拉方程的特征系统类
+ *
+ * 变量序与 2D 类一致（输入/输出均为 [rho, u, v, w, p]），内部按守恒量做变换：
+ *   primToChar：把原始量组成守恒量 U=(rho, rho*u, rho*v, rho*w, rho*E)，乘左特征矩阵；
+ *   charToPrim：乘右特征矩阵还原守恒量，再拆回原始量。
+ * leftEig/rightEig 为 5×5（行主序）互为逆矩阵，行/列构造与 2D 类逐行对应：
+ *   剪切波×2（切向基 t1/t2）、熵波、声波±。
+ * 说明：leftEig/rightEig 置于 public 区，供内核测试直接取用。
+ */
+class eigensystemEuler3D
+{
+    public:
+    eigensystemEuler3D(){};
+
+    /**
+     * @brief 单态构造：以同一状态构造（内部委托两态构造，等价于不做 Roe 平均）
+     */
+    eigensystemEuler3D(const std::array<real,5> & prim,const std::array<real,3> & norm_);
+
+    /**
+     * @brief 两态构造：左右状态 Roe 平均得到参考态（recon3DFaceCenter 使用）
+     */
+    eigensystemEuler3D(const std::array<real,5> &priml,const std::array<real,5> &primr,const std::array<real,3> & norm_);
+
+    /**
+     * @brief 将原始变量转换为特征变量
+     */
+    std::array<real,5> primToChar(const std::array<real,5> & prim);
+
+    /**
+     * @brief 将特征变量转换为原始变量
+     */
+    std::array<real,5> charToPrim(const std::array<real,5> & chars);
+
+    std::array<real,25> leftEig;    ///< 左特征矩阵（行主序，5×5）
+    std::array<real,25> rightEig;   ///< 右特征矩阵（行主序，5×5）
+
+    private:
+    real r;                     ///< 密度
+    real u;                     ///< x方向速度
+    real v;                     ///< y方向速度
+    real w;                     ///< z方向速度
+    real p;                     ///< 压力
+    real gamma;                 ///< 比热比
+    real ek;                    ///< 动能
+    real h;                     ///< 比焓
+    real c;                     ///< 声速
+    real Vn;                    ///< 法向速度
+    std::array<real,3> norm;    ///< 法向量
+};
