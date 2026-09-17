@@ -68,6 +68,12 @@ add_executable(dim3CrossTest dim3CrossTest.cpp)
 # 为dim3CrossTest目标链接相同的库
 target_link_libraries(dim3CrossTest PUBLIC libcongFD OpenMP::OpenMP_CXX)
 
+# 创建名为fixedDtWaveTest的可执行文件（固定 dt 复核：熵波三档，独立审查建议）
+add_executable(fixedDtWaveTest fixedDtWaveTest.cpp)
+
+# 为fixedDtWaveTest目标链接相同的库
+target_link_libraries(fixedDtWaveTest PUBLIC libcongFD OpenMP::OpenMP_CXX)
+
 # 添加src和utils子目录，CMake会处理这些子目录中的CMakeLists.txt文件[1](@ref)
 # 通常这些子目录中定义了libcongFD库的构建规则
 add_subdirectory(src)

@@ -182,6 +182,7 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--grid);color:v
     <a href="#s6">⑥ git 证据</a>
     <a href="#s7">⑦ 未覆盖项（如实声明）</a>
     <a href="#s8">⑧ 验证框架与文献</a>
+    <a href="#s9">⑨ 反证与独立审查</a>
     <a href="index.html">↩ 进度仪表盘</a>
   </nav>
   <div class="side-status">
@@ -204,7 +205,7 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--grid);color:v
   <div class="big">建议验收通过</div>
   <div>
     <div style="font-weight:650">开发任务（三维欧拉加装，任务 2–8）已完成，各层证据链全部通过：</div>
-    <div class="small">内核（7/7）→ 回归（2D 零差异）→ 系统（守恒逐位、确定性逐位、收敛 p=4.69）→ <b>外部真值（熵波 vs 解析解 4.4–4.8 阶）</b>→ 对称性（1.7e-14）→ <b>参照实现对照（2D↔3D 退化一致，8e-15）</b>。
+    <div class="small">内核（7/7）→ 回归（2D 零差异）→ 系统（守恒逐位、确定性逐位、收敛 p=4.69）→ <b>外部真值（熵波 5 阶收敛，固定 dt 复核 4.98-5.00）</b>→ 对称性（1.7e-14）→ <b>参照实现对照（2D↔3D 退化一致，8e-15）</b>。
     最终算例（任务 9：64³ 四格式 × t=10，约 6.5–7.5 h 机时）<b>按决策暂缓</b>，不在本次验收范围（见 §7）。</div>
   </div>
 </div>
@@ -220,7 +221,7 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--grid);color:v
       <div class="node" style="border-left-color:var(--good)"><span class="nt">L3 守恒</span><span class="nd">均匀场逐位不变<br>自由流保持</span></div>
       <div class="node" style="border-left-color:var(--good)"><span class="nt">L3 确定性</span><span class="nd">OMP1=14 逐位<br>计算可复现</span></div>
       <div class="node" style="border-left-color:var(--good)"><span class="nt">L5 参照对照</span><span class="nd">2D↔3D 退化一致<br>相对差 8e-15</span></div>
-      <div class="node" style="border-left-color:var(--good)"><span class="nt">L4 外部真值 ★</span><span class="nd">熵波 vs 解析<br>4.4–4.8 阶；对称性 1.7e-14</span></div>
+      <div class="node" style="border-left-color:var(--good)"><span class="nt">L4 外部真值 ★</span><span class="nd">熵波 vs 解析<br>5 阶（固定 dt 复核）；对称性 1.7e-14</span></div>
     </div>
     <div class="joinline">└──────────── 六路汇聚 ────────────┘</div>
     <div class="arrow">▼</div>
@@ -274,7 +275,7 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--grid);color:v
     <div>
       <div class="ct">⑤ 查 git：改动全部有提交、工作区干净</div>
       <div class="cm">执行后：列出的每一笔提交都能 <code>git show &lt;hash&gt;</code> 查看；status 应为空（干净）：</div>
-      <div class="cmd" data-cmd="cd ~/Documents/GitHubWSL/CFD_congFD-and-Tools_inWSL/CongFD1.0_my && git log --oneline -12 && echo '--- 工作区：' && git status --short">cd ~/Documents/GitHubWSL/CFD_congFD-and-Tools_inWSL/CongFD1.0_my && git log --oneline -12 && echo '--- 工作区：' && git status --short</div>
+      <div class="cmd" data-cmd="cd ~/Documents/GitHubWSL/CFD_congFD-and-Tools_inWSL/CongFD1.0_my &amp;&amp; git log --oneline -16 &amp;&amp; echo '--- 工作区：' &amp;&amp; git status --short">cd ~/Documents/GitHubWSL/CFD_congFD-and-Tools_inWSL/CongFD1.0_my &amp;&amp; git log --oneline -16 &amp;&amp; echo '--- 工作区：' &amp;&amp; git status --short</div>
     </div>
   </div>
 
@@ -310,15 +311,17 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--grid);color:v
     <tr><td class="num">4</td><td>三维面心重构 / 通量装配 / 分派 / 差分链</td><td class="num">5</td><td>SpaceDis、sp_recon、sp_flux、sp_difference</td></tr>
     <tr><td class="num">5</td><td>TGV 初值＋六面周期边界＋命名＋K/Ω 诊断</td><td class="num">6、7</td><td>initializer.cpp、zoneMain.cpp、info.cpp、diagnostics.hpp/cpp、blockSolver.cpp</td></tr>
   </table>
-  <h3>判据总表（全部为<b>事先定义</b>，非事后拟合）</h3>
+  <h3>判据总表（来源与定义时点逐条标注；"先于运行定义"者给出可查依据）</h3>
   <table>
     <tr><th>判据</th><th>阈值</th><th>来源</th></tr>
     <tr><td>均匀场纯性</td><td>K 首末相对差 ≤ 1e-12；Ω ≤ 1e-12；无 NaN</td><td>《推进方案》§3.3 任务 8-1</td></tr>
     <tr><td>线程确定性</td><td>OMP=1 与 OMP=14 输出逐位一致</td><td>《推进方案》§3.3 任务 8-2</td></tr>
     <tr><td>网格收敛（TGV）</td><td>p = log2((K17−K33)/(K33−K65)) ∈ [4.5, 5.5]</td><td>《推进方案》§3.3 任务 8-3</td></tr>
     <tr><td>2D 基线回归</td><td>h5diff 数据级零差异（唯一豁免 hdf5version）</td><td>《推进方案》§3.2 与附录 B</td></tr>
-    <tr><td>内核测试</td><td>全部断言 PASS（容差 1e-12–1e-14）</td><td>《推进方案》任务 3/4/7</td></tr>
+    <tr><td>内核测试</td><td>全部断言 PASS；容差按断言不同：1e-14（物理通量）/1e-12（同态退化、2D 退化、特征往返、L·R=I）/1e-10（K(0)=π³ 锚点）/1e-4（Ω(0)=3π³ 锚点，最松、受四阶差分截断限制）——实际余量见 P-1</td><td>《推进方案》任务 3/4/7（容差为当时原文）</td></tr>
     <tr><td>外部真值（熵波）</td><td>无预设阈值——报告实测误差与收敛阶（本项为应验收要求新增，见 §3 P-6 说明）</td><td>本轮新增（任务 8.5）</td></tr>
+    <tr><td>TGV 镜像对称（加固）</td><td>破缺 ≤ 1e-12</td><td>本轮定义（先于运行；阈值写入 tools/tgv_symmetry.py 源码，随 c979682 起可查）</td></tr>
+    <tr><td>2D↔3D 参照对照</td><td>逐点相对差 ≤ 1e-12；z 方向均匀性保持</td><td>任务 8.6 设计时定义（判据常量随 c979682 入库于 tools/cross_compare.py，可查）</td></tr>
   </table>
 </div>
 
@@ -386,13 +389,13 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--grid);color:v
     </tr>
     <tr>
       <td><b>P-6</b></td><td><b>外部真值：与数学解析解逐点对比（熵波）</b></td>
-      <td class="mono">Linf: 1.23e-4 → 2.14e-7；阶 4.77 / 4.40</td><td>收敛成立、全域 0 污染</td>
+      <td class="mono">Linf: 1.23e-4 → 2.14e-7（CFL）；固定 dt 复核 7.45e-5 → 7.40e-8、阶 4.98-5.00</td><td>收敛成立、全域 0 污染</td>
       <td class="small">§3-P6：python3 tools/wave_error.py</td>
       <td><span class="chip done"><span class="dot"></span>通过</span></td>
     </tr>
     <tr>
       <td>P-7</td><td>无方向性/边界缺陷（三方链路对称）</td>
-      <td class="mono">镜像破缺 ≤ 1.94e-14（3770 步后）</td><td>机器零</td>
+      <td class="mono">镜像破缺 ≤ 1.94e-14（3833 步后）</td><td>机器零</td>
       <td class="small">§3-P7：python3 tools/tgv_symmetry.py</td>
       <td><span class="chip done"><span class="dot"></span>通过</span></td>
     </tr>
@@ -420,7 +423,7 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--grid);color:v
   <dl>
     <dt>主张</dt><dd>三维物理通量、Roe 通量、特征系统（5×5）与 K/Ω 诊断的实现与解析真值一致。</dd>
     <dt>为何有效</dt><dd>每项断言都对照<b>独立已知的真值</b>：①物理通量逐分量对照 fEuler 解析式；②Roe 通量左右同态时耗散项恒零 → 必须等于物理通量；③w=0、n=x 时 3D Roe 必须与既有 2D 版<b>逐值一致</b>（2D 版已被历史验证）；④特征系统 prim→char→prim 往返 + L·R=I（左乘右乘单位阵）；⑤K/Ω 诊断对 64³ 解析 TGV 场必须给出解析值（K=π³、Ω=3π³）。符号、系数、索引任一处写错都会触发失败。</dd>
-    <dt>判据</dt><dd>全部断言 PASS（容差 1e-12–1e-14）。来源：《推进方案》任务 3/4/7。</dd>
+    <dt>判据</dt><dd>全部断言 PASS；容差按断言为 1e-14（物理通量）、1e-12（同态退化、2D 退化、特征往返、L·R=I）、1e-10（K(0)=π³）、1e-4（Ω(0)=3π³，最松）。实际余量：K(0) 相对差 ~1e-14；Ω(0) 相对差 6.2e-6（远小于其 1e-4 容差）。来源：《推进方案》任务 3/4/7。</dd>
     <dt>看什么</dt><dd><code>dim3KernelTest.cpp</code>（7 条断言的源码）</dd>
     <dt>实测</dt><dd>7/7 ALL PASS（failures=0）。</dd>
     <dt>边界</dt><dd>只覆盖函数级正确性；装配/时序/边界不在本层——由 P-3、P-4、P-7 覆盖。</dd>
@@ -462,7 +465,7 @@ h5diff "2D_Riemann_Config4 - TENO-AS-Ff_5_10 - 81x81 - t=0.3000.cgns" ~/Document
     <dt>为何有效</dt><dd>机制上必然成立的三条件：①Roe 通量左右同态时耗散项 ≡ 0（<b>已由 P-1 断言 2 验证</b>）→ 面通量=物理通量；②MND6 差分（节点项 −(3/10)(f<sub>i+1</sub>−f<sub>i−1</sub>)/h ＋ 面项 (3/2)(F<sub>i+1</sub>−F<sub>i</sub>)/h ＋ (1/30)(F<sub>i+2</sub>−F<sub>i−1</sub>)/h 的混合形式，系数经源码核对）对常数场各项差值恒为零；③周期边界对常值场是恒等。三者成立则 RHS ≡ 0，解逐位不变。因此本测试能"审核"整条装配链：任何索引/符号/方向错位都会产生 O(1) 扰动，不可能保持机器精度。</dd>
     <dt>判据</dt><dd>K 首末相对差 ≤ 1e-12；Ω ≤ 1e-12；无 NaN。（来源：方案任务 8-1）</dd>
     <dt>看什么</dt><dd><code>runs/tgv8_uni/diagnostics.txt</code>（原始输出）</dd>
-    <dt>实测</dt><dd>K 两行<b>逐位相同</b>（相对差 = 0，严格优于判据）；Ω 两行均为严格 0；与解析值 K=7·(2π)³=1736.3514940968932… <b>逐位吻合</b>。加固：h5diff 全场（5 变量 × 17³）t=0 vs t=0.6 <b>零差异</b>——守恒的是每个格点的每个变量，不只是积分量。</dd>
+    <dt>实测</dt><dd>K 两行<b>逐位相同</b>（相对差 = 0，严格优于判据；这是本项的强证据）；Ω 两行均为严格 0；与双精度解析值 7·(2π)³（=1736.3514940967898…）的相对差为 6e-14（绝对差 1.0e-10，系浮点求和路径的自然差异，非逐位）。加固：h5diff 全场（5 变量 × 17³）t=0 vs t=0.6 <b>零差异</b>——守恒的是每个格点的每个变量，不只是积分量。</dd>
     <dt>防假阳性</dt><dd>若 RHS 链路被旁路，本测试会假通过——排除依据：同一构建在 TGV/熵波中产生非平凡演化（P-5/P-6），证明空间离散实际参与计算。故本处的零是"算出来的零"。</dd>
     <dt>边界</dt><dd>不覆盖非均匀场（由 P-5/P-6 覆盖）。</dd>
   </dl>
@@ -496,7 +499,7 @@ h5diff "2D_Riemann_Config4 - TENO-AS-Ff_5_10 - 81x81 - t=0.3000.cgns" ~/Document
     <dt>判据</dt><dd>p ∈ [4.5, 5.5]。（来源：方案任务 8-3，预先定义）</dd>
     <dt>看什么</dt><dd>三份 <code>runs/tgv8_n{17,33,65}/diagnostics.txt</code> 的末行（t=1）</dd>
     <dt>实测</dt><dd>K17=30.734107142505081，K33=30.998509692176782，K65=31.0087392764643526 → <b>p = log2(25.847) = 4.69 ✓</b></dd>
-    <dt>透明说明</dt><dd>① K 为格心矩形求和泛函，自身含 O(h²) 求积项——64 格档 K 略超 π³=31.0062767 即此项与离散能量效应（不是"耗散变大"）；② 时间误差已排除：dt≈2.6e-4，RK3 时间项 ~1e-11，远小于空间差异；③ 4.69 略低于名义 5，与 ① 的混合一致——<b>纯格式阶由 P-6（逐点、无积分环节）独立给出</b>。</dd>
+    <dt>透明说明</dt><dd>① K(t=1) 与 π³=31.0062767 的偏离（16/32 格为负、64 格 +0.0025）包含两类<b>本报告未分离</b>的效应：可压缩 Euler 的动能-内能交换（物理，O(M²) 级）与离散效应（数值）——不作单一机制归因；求积项不构成该量级的解释（K(0) 与 π³ 的实测相对差仅 6e-14）；② 时间误差的量级论证（dt≈2.6e-4 → RK3 时间项 ~1e-11）保留；固定 dt 复核（§9.3）已执行：排除时间污染的熵波空间阶为 4.98-5.00；③ 4.69 与名义 5 的差距由上述混合与预渐近共同构成——<b>纯格式阶的主要证据为 P-6（含 §9.3 固定 dt 复核）</b>。</dd>
     <dt>边界</dt><dd>证明的是"K 泛函收敛于正确量级的阶"，不单独构成格式精度的最终证据（以 P-6 为主、两者互证）。</dd>
   </dl>
   <div class="cmd">cd ~/Documents/GitHubWSL/CFD_congFD-and-Tools_inWSL/CongFD1.0_my
@@ -524,7 +527,7 @@ EOF</div>
     <dt>判据</dt><dd>本项无预设阈值（应验收要求新增的外部验证）：判"收敛成立、阶接近名义 5 阶、无局部污染"。</dd>
     <dt>看什么</dt><dd>算例：nCase=3，CFL=0.5，t=2；数据 <code>runs/wav2_n{17,33,65}/…t=2.0000.cgns</code>；工具 <code>tools/wave_error.py</code></dd>
     <dt>实测</dt><dd>见下表（Linf/L2 两列一致地进入 4.4–4.8 阶区间，全域 51.1%→0% 污染对比见 §5）。</dd>
-    <dt>互证</dt><dd>与 P-5 的 TGV p=4.69 落在<b>同一精度带</b>（4.4–4.8）——两套独立测试（非线性驻波 vs 直线平移波）互证。</dd>
+    <dt>互证（事后观察）</dt><dd>与 P-5 的 4.69 处于同一量级（4.4–4.8）——两套独立测试（非线性驻波 vs 直线平移波）结果相近；此"同一量级"为<b>事后观察记录，非预设一致性判据</b>（P-6 本身无预设阶阈值）。<b>后续的固定 dt 复核（§9.3）给出 4.98-5.00</b>——本测试的空间阶在排除时间污染后为名义 5 阶；CFL 方案的值（4.77/4.40）应理解为时空混合阶。</dd>
     <dt>边界</dt><dd>单波数、单振幅的点测量；两区间的阶（4.77、4.40）反映预渐近波动，未做阶数的极限外推。</dd>
   </dl>
   <table>
@@ -545,11 +548,11 @@ EOF</div>
 <div class="ev" id="p7">
   <div class="evh"><span class="pid">P-7</span><span class="evt">无方向性/边界缺陷：TGV 镜像对称保持</span><span class="chip done"><span class="dot"></span>通过</span></div>
   <dl>
-    <dt>主张</dt><dd>64³ TGV 场经 3770 步演化后，四组镜像关系保持到机器零（≤1.94e-14）。</dd>
+    <dt>主张</dt><dd>64³ TGV 场经 3833 步演化后，四组镜像关系保持到机器零（≤1.94e-14）。</dd>
     <dt>为何有效</dt><dd>TGV 初值对 x/y 反射满足精确的 u 反对称/对称、v 对称/反对称关系；只要三方向离散链路各向同性且周期边界正确，这些关系在整个演化中保持。任何方向性缺陷（某方向通量/差分符号、幽灵层填充不对称、边界注入）都会在破缺量中显形为远大于机器零的值。</dd>
     <dt>判据</dt><dd>破缺 ≤ 1e-12（机器零量级；本项为加固检验）。</dd>
     <dt>看什么</dt><dd><code>runs/tgv8_n65/…t=1.0000.cgns</code>；工具 <code>tools/tgv_symmetry.py</code></dd>
-    <dt>实测</dt><dd>x-反射：u 反对称 1.722e-14、v 对称 1.769e-14；y-反射：u 对称 1.724e-14、v 反对称 1.942e-14 —— 均为机器零（3770 步累积舍入量级）。</dd>
+    <dt>实测</dt><dd>x-反射：u 反对称 1.722e-14、v 对称 1.769e-14；y-反射：u 对称 1.724e-14、v 反对称 1.942e-14 —— 均为机器零（3833 步累积舍入量级）。</dd>
     <dt>边界</dt><dd>只检验 z 对称性之外的镜像；z 方向由 P-6（斜向三方向非平凡）覆盖。</dd>
   </dl>
   <div class="cmd" data-cmd="cd ~/Documents/GitHubWSL/CFD_congFD-and-Tools_inWSL/CongFD1.0_my &amp;&amp; python3 tools/tgv_symmetry.py">cd ~/Documents/GitHubWSL/CFD_congFD-and-Tools_inWSL/CongFD1.0_my &amp;&amp; python3 tools/tgv_symmetry.py</div>
@@ -565,7 +568,7 @@ EOF</div>
     <dt>主张</dt><dd>开发过程按任务分批提交（v3.1.4–v3.1.15），任何一步可用 <code>git show</code> 单独检出/回溯；当前工作区干净（无未提交改动）。</dd>
     <dt>为何有效</dt><dd>提交历史 = 可审计的改动轨迹：每笔提交对应一个任务、带中文注释的改动列表（完整清单见 §6）。分批而非一次性提交，保证每个中间点都能被单独审查与回退。</dd>
     <dt>看什么/跑什么</dt><dd>见 §6 的命令（git log / status / show）。</dd>
-    <dt>实测</dt><dd>§6 表列 12 笔（基线 92587aa ＋ 11 笔）；终态 status 为空。</dd>
+    <dt>实测</dt><dd>§6 表列 15 笔（基线 92587aa ＋ 14 笔；本次 v3.1.18 以 <code>git log -1</code> 查证）；终态 status 为空。</dd>
     <dt>边界</dt><dd>推送（远端同步）尚未执行——按约定由你手动推送（见 §6）。</dd>
   </dl>
 </div>
@@ -574,7 +577,7 @@ EOF</div>
   <div class="evh"><span class="pid">P-9</span><span class="evt">参照实现对照：2D↔3D code-to-code</span><span class="chip done"><span class="dot"></span>通过</span></div>
   <dl>
     <dt>主张</dt><dd>同一初值（2D TGV）分别在 dim=2 与 dim=3（z 均匀嵌入）下、以固定 dt 同步推进 1000 步（t=1），逐点差 ≤ 8.1e-15（机器舍入量级）。</dd>
-    <dt>为何有效</dt><dd>两版共用 RK3 时间积分与逐维框架，<b>唯一差异是空间离散的 2D/3D 分派链</b>（面心重构、Roe 通量、差分装配、周期装配）——而 2D 路径已被历史算例独立验证（P-2）。因此"两版轨迹在舍入级一致"直接证明 3D 分派链在二维退化下的等价性（V&amp;V 中的 code-to-code / 参照实现对照做法）。</dd>
+    <dt>为何有效</dt><dd>两版共用 RK3 时间积分与逐维框架，<b>唯一差异是空间离散的 2D/3D 分派链</b>（面心重构、Roe 通量、差分装配、周期装配）——而 2D 路径已被历史算例独立验证（P-2）。因此"两版轨迹在舍入级一致"直接证明 3D 分派链在二维退化下的等价性（V&amp;V 中的 code-to-code / 参照实现对照做法）。独立代码审查补充：x 法向、w=0 时 3D 特征系统与 2D 的特征场一一对应（仅一个整体符号差异，对符号齐次的插值无影响）——结构上支持该等价性。注意：本对照的参照物是 2D 的<b>空间离散主链</b>（重构/通量/差分，经历史算例验证）；2D 侧新载体（初值＋四面周期装配）与本对照同批引入，其接线正确性由两版一致性与与 3D 周期装配的同构性共同支撑。</dd>
     <dt>判据</dt><dd>逐点相对差 ≤ 1e-12（预设）；z 方向均匀性保持。（来源：任务 8.6 设计，先于运行定义）</dd>
     <dt>看什么</dt><dd><code>dim3CrossTest.cpp</code>（固定 dt 直调 solve()）；<code>runs/cross/</code> 输出；<code>tools/cross_compare.py</code></dd>
     <dt>实测</dt><dd>max|2D−3D| 相对差：ρ 8.1e-15、u 6.1e-15、v 5.2e-15、p 3.8e-15（优于判据 ~120 倍）；z 均匀性（层 0 vs 层 1）= 0.000e+00。</dd>
@@ -607,7 +610,7 @@ EOF</div>
   <div id="fig-conv"></div>
 </div>
 <div class="figwrap">
-  <div class="small" style="margin-bottom:4px"><b>图 B · TGV K(t=1) 三档网格（P-5，纵轴放大）</b>——虚线为 π³=31.0062767（K(0) 精确值）；64 格档略高于虚线 = K 泛函的 O(h²) 求积项（见 P-5 透明说明）。</div>
+  <div class="small" style="margin-bottom:4px"><b>图 B · TGV K(t=1) 三档网格（P-5，纵轴放大）</b>——虚线为 π³=31.0062767（K(0) 精确值）；64 格档略高于虚线，其归因见 P-5 透明说明（未分离的物理/离散效应，不作单一机制解释）。</div>
   <div id="fig-ktgv"></div>
 </div>
 
@@ -655,6 +658,11 @@ EOF</div>
   <div class="small">
     同一份代码、同一套配置，<b>仅将波矢改为整数 (1,1,1)</b>（严格周期）：全域 <b>0</b> 污染点、误差 1.23e-4 → 2.14e-7、收敛 4.4–4.8 阶（即 P-6）。
     → 对照实验成立：<b>代码无缺陷；两轮"炸"是测试设计问题（本轮选例者的失误）</b>。
+  </div>
+  <h3>复现与边界（独立审查后的补充）</h3>
+  <div class="small">
+    <b>污染判据与命令</b>（可复算本页数字）：涡 = 数值场与解析解的 |Δu|&gt;0.1 格点占比；初版波 = |Δρ|&gt;0.01 占比。命令：<code>python3 tools/incident_stats.py vortex &lt;cgns&gt; 0.1</code>／<code>python3 tools/incident_stats.py wave_old &lt;cgns&gt; 0.01</code>（工具随本轮入库）。实测复现：涡 9.05%（t=0.5）→17.96%（t=1）→32.63%（t=2）；初版波 51.13%（t=2）；现行波 0.00%。<br>
+    <b>复现边界（如实声明）</b>：① 涡算例（nCase=2）源码仍在库中，可完整重跑复现；② 初版熵波（波矢 (1,2,3)/√14）完成于初值入库<b>之前</b>，其源码状态未入库（git 无法复核该次运行）——本页数字来自当时运行的原始数据（保留于 <code>runs/wav_n33/</code>，可用上述命令对其复算）。故"同一份代码、仅改波矢"的准确表述应为：<b>同一构建、仅初值不同</b>。
   </div>
   <h3>处置</h3>
   <div class="small">等熵涡（nCase=2）保留代码但<b>不作判决测试</b>（如未来使用须改大域或周期化初值）；本事件与判定实验完整留档（核验记录 §7 + 本页）。</div>
@@ -717,7 +725,7 @@ EOF</div>
     <tr>
       <td><b>Solution Verification</b><br><span class="mini">解的不确定度</span></td>
       <td>估计给定算例的数值不确定度——网格收敛与 Richardson 外推</td>
-      <td>P-5 三档网格收敛（p=4.69）；<b>GCI</b>（细网格）= 1.25·|ε|/(r<sup>p</sup>−1) ≈ <b>1.7e-5</b>（r=2，ε=|K33−K65|/K65=3.3e-4，Fs=1.25）</td>
+      <td>P-5 三档网格收敛（p=4.69）；<b>GCI</b>（细网格，<b>示意性量级估计</b>）= 1.25·|ε|/(r<sup>p</sup>−1) ≈ <b>1.7e-5</b>（r=2，ε=|K33−K65|/K65=3.3e-4，Fs=1.25）</td>
       <td><span class="chip done"><span class="dot"></span>已给出</span></td>
     </tr>
     <tr>
@@ -735,7 +743,85 @@ EOF</div>
     <tr><td>网格收敛研究（P-5 三档）</td><td>Wang et al. 2020：errors against grid size / grid requirements（同族做法）</td></tr>
     <tr><td>参照实现对照（P-9）</td><td>V&amp;V 通行手法 code-to-code comparison（以已独立验证的实现作参照系）</td></tr>
   </table>
-  <div class="mini" style="margin-top:6px">说明与边界：①"框架层"采用 V&amp;V 文献与标准中通用的三层分类术语（Code Verification / Solution Verification / Validation）；②本报告<b>不引具体标准条文</b>（AIAA G-077、ASME V&amp;V 20 等标准原文不在手边，按"引用先查原文"的原则不作条文级引用，仅采用其通行术语与做法）；③GCI 安全系数 Fs=1.25（Roache 建议值）。</div>
+  <div class="mini" style="margin-top:6px">说明与边界：①"框架层"采用 V&amp;V 文献与标准中通用的三层分类术语（Code Verification / Solution Verification / Validation）；②本报告<b>不引具体标准条文</b>（AIAA G-077、ASME V&amp;V 20 等标准原文不在手边，按"引用先查原文"的原则不作条文级引用，仅采用其通行术语与做法）；③GCI 安全系数 Fs=1.25（Roache 建议值）；④ GCI 为示意性量级参考——其"处于渐近区间"的假设与 P-6 的预渐近观察（区间阶 4.77→4.40）并存，仅作不确定度量级指示。</div>
+</div>
+
+<!-- ================= ⑨ 反证与独立审查 ================= -->
+<h2 id="s9">⑨ 反证清单、独立审查与数据锚定</h2>
+<div class="card">
+  <div class="small" style="margin-bottom:6px"><b>为什么有这一节</b>：验收方提出"结论先行是否会导致取证偏差"的担忧。本节以三种<b>外部性手段</b>应对：① <b>证伪条件表</b>——把每条结论先写成可否证形式（先列"什么观测会推翻它"，再看本次是否触发）；② <b>独立审查</b>——三个全新会话的独立代理（数值盲审 / 红队证伪 / 代码一致性核对），其中两份未被告知任何结论；③ <b>数据锚定</b>——关键证据文件的 SHA-256，防事后改动。</div>
+
+  <h3>9.1 证伪条件表（先写推翻条件，再看观测）</h3>
+  <table>
+    <tr><th>结论</th><th>若观测到以下之一，则本条被推翻</th><th>本次观测（均未触发）</th></tr>
+    <tr><td>P-1 函数级正确</td><td>任一断言 FAIL</td><td>7/7 PASS（实际余量：K 锚点相对差 1e-14、Ω 锚点 6.2e-6，均远小于各自容差）</td></tr>
+    <tr><td>P-2 回归零差异</td><td>h5diff 在流场数据集上出现任意差异</td><td>仅 hdf5version 一条（豁免项；且为库版本号 2.2.0 vs 2.1.1）</td></tr>
+    <tr><td>P-3 自由流精确保持</td><td>K 两行不逐位相同 / Ω≠0 / 全场 h5diff 有差异</td><td>K 两行逐位相同、Ω 严格 0、全场零差异</td></tr>
+    <tr><td>P-4 线程确定性</td><td>两份诊断任意一位不同 / 全场 h5diff 有差异</td><td>逐字节一致、全场零差异</td></tr>
+    <tr><td>P-5 收敛（K 泛函）</td><td>p ∉ [4.5, 5.5]</td><td>p = 4.69（预设判据内；其局限见 P-5 透明说明）</td></tr>
+    <tr><td>P-6 外部真值（熵波）</td><td>误差随网格不降 / 出现局部污染 / 收敛阶远离名义阶</td><td>1.23e-4→2.14e-7；0 污染点；阶 4.77/4.40（固定 dt 复核见 9.3）</td></tr>
+    <tr><td>P-7 对称性</td><td>任一镜像关系破缺 &gt; 1e-12</td><td>主检最大 1.94e-14；补测（w/ρ/p×全方向）最大 3.84e-13 ≤ 阈值</td></tr>
+    <tr><td>P-9 参照对照</td><td>逐点相对差 &gt; 1e-12 / z 层不一致</td><td>8.1e-15；z 层严格一致</td></tr>
+  </table>
+
+  <h3>9.2 独立审查（三份，独立于本报告的叙述）</h3>
+  <table>
+    <tr><th>审查</th><th>方法</th><th>结论（要点）</th><th>处置</th></tr>
+    <tr>
+      <td><b>A 数值盲审</b><br><span class="mini">未被告知任何结论</span></td>
+      <td>只给判据＋原始数据＋工具，独立复算全部 8 项</td>
+      <td><b>8/8 PASS、无判据与数据不符</b>；另补充独立证据（误差按光滑分布衰减、逐层 z 均匀、u/v/w 对基流偏差 ≤3.9e-15、p 无振荡）；发现 wav2_n17 诊断文件重复行系重跑叠加（双次运行前 62 行逐字节相同）；建议以固定小 dt 排除"dt∝h 的时间掺入"</td>
+      <td>全部采纳；建议已执行（9.3）；重复行来源已注明</td>
+    </tr>
+    <tr>
+      <td><b>B 红队证伪</b><br><span class="mini">默认立场=怀疑</span></td>
+      <td>只给报告＋底稿，专找"结论强于证据 / 选择性呈现 / 判据放水"</td>
+      <td><b>未发现数据造假</b>（8 条抽样复算全部一致）；但指出一批<b>表述问题</b>：内核测试容差转述含糊（最松的 1e-4 项被并入"1e-12–1e-14"）、K 超调的错误机制解释、"与解析值逐位吻合"不成立、§5"污染"无定义不可复核、判据表漏列 P-7/P-9、步数 3770 与笔数计数偏差等</td>
+      <td><b>逐条修正</b>：容差按断言逐条列明并给实际余量；K 归因改为"未分离的物理（可压缩动能-内能交换）/离散效应"并撤回求积项解释；"逐位"限定为行间比较；"污染"给出判据与命令（tools/incident_stats.py）并声明复现边界（旧波源码未入库）；判据表补两行并标注来源可查性；步数/笔数校正</td>
+    </tr>
+    <tr>
+      <td><b>C 代码一致性</b><br><span class="mini">未被告知任何结论</span></td>
+      <td>7 条机制声称，独立读源码判定真伪并给行号证据</td>
+      <td><b>7/7 真 / 结构支持</b>：Roe 同态耗散恒零（逐项核对）；MND6 对常场恒零（机制澄清：同量差分，与权重无关）；K/Ω 诊断实现无误；实际配置 EULER/WCNS5/MND6/nGhost=4（并独立论证"4 恰为所需"）；线号公式↔装配↔遍历↔calOffset 四方一致（stride 修复后）；3D 特征场与 2D 一一对应（支持 P-9 等价性）；逐维框架索引语义一致。另报告 4 处非阻塞发现（根 info.txt 与解析器不符＝既知陈旧文件、at/fluxAt 的 stride 语义不统一、轴向判定 &gt;= 与 &gt; 的分歧〔不可达〕、dim==3 的 Char2D 死代码＋断言）</td>
+      <td>全部记录于核验记录 §9；4 处非阻塞发现均属既有代码、不影响任何验证结论；根 info.txt 一事此前已由用户决定暂不处理</td>
+    </tr>
+  </table>
+  <div class="mini">说明：A/C 执行时仅获得判据/声称清单与原始材料（无本报告结论段）；B 以证伪为默认立场。三份审查的完整结论随本次提交（v3.1.19）全文附于核验记录 §9。</div>
+
+  <h3>9.3 固定 dt 复核（A 建议，已完成）</h3>
+  <div class="small">
+    目的：排除 CFL 固定（dt 与 h 成正比）下时间误差 O(h³) 对收敛阶的污染。实现：<code>fixedDtWaveTest</code>，三档同 dt=5e-4、4000 步、t=2。<br>
+    <table>
+      <tr><th>格数</th><th>Linf</th><th>L2</th><th>区间阶（Linf / L2）</th></tr>
+      <tr><td class="num">16</td><td class="num">7.446e-5</td><td class="num">5.282e-5</td><td class="num">—</td></tr>
+      <tr><td class="num">32</td><td class="num">2.354e-6</td><td class="num">1.669e-6</td><td class="num">4.98 / 4.98</td></tr>
+      <tr><td class="num">64</td><td class="num">7.397e-8</td><td class="num">5.232e-8</td><td class="num">4.99 / 5.00</td></tr>
+    </table>
+    <b>结论</b>：固定 dt 下收敛阶 4.98 至 5.00（两区间、双范数共四个值），<b>空间格式的名义 5 阶在无时间污染下精确显现</b>；误差同时更小（64 格 7.4e-8，对比 CFL 方案的 2.1e-7）。对照 CFL 方案（4.77 / 4.40）证实其阶数含时间误差成分（A 审查的怀疑成立）：<b>"5 阶空间精度"的主张以本复核为准</b>，CFL 方案的值应理解为时空混合阶。<br>
+    复算命令：<code>python3 tools/wave_error.py 2.0 runs/wavfix_n</code>。数据：<code>runs/wavfix_n{17,33,65}/</code>。
+  </div>
+
+  <h3>9.4 数据锚定（关键证据文件 SHA-256）</h3>
+  <div class="small">以下哈希在本报告定稿时计算；文件此后若被改动，哈希将不再匹配（复算：<code>sha256sum &lt;文件&gt;</code>）。</div>
+  <table>
+    <tr><th>文件</th><th class="mono">SHA-256</th></tr>
+    <tr><td class="mono">runs/tgv8_uni/diagnostics.txt</td><td class="mono">29d32d650d95596187b23e36722571d8597146cde6c7430fab142996db80d546</td></tr>
+    <tr><td class="mono">runs/tgv8_omp1/diagnostics.txt</td><td class="mono">df46aef8b4077c6aa1bc0e2d0f55db0a16a5e6527fc9fb1e869a7ff90db49ce9</td></tr>
+    <tr><td class="mono">runs/tgv8_omp14/diagnostics.txt</td><td class="mono">df46aef8b4077c6aa1bc0e2d0f55db0a16a5e6527fc9fb1e869a7ff90db49ce9</td></tr>
+    <tr><td class="mono">runs/tgv8_n17/diagnostics.txt</td><td class="mono">afb231c324c1388fa10e17a417c9ff918f398c9dfa67584bc2adc58d21936db9</td></tr>
+    <tr><td class="mono">runs/tgv8_n33/diagnostics.txt</td><td class="mono">e5943a9b5d5626d74557243a1ff1a11f81b1f4341b7d138ca23b590b14932a88</td></tr>
+    <tr><td class="mono">runs/tgv8_n65/diagnostics.txt</td><td class="mono">301e9ee42142562a2e47322a806a86f18e9b161ccd3cb57fcaf39016538a3699</td></tr>
+    <tr><td class="mono">runs/wav2_n17/…t=2.0000.cgns</td><td class="mono">5e0011e1b56a6040da04bf6836870d0f5cba3e0b2c9fed8f582899be21b16cf6</td></tr>
+    <tr><td class="mono">runs/wav2_n33/…t=2.0000.cgns</td><td class="mono">d8707bd792cc0c8ad128e7d9548fd44cc98b44b231f3fcbc989b53b2f447685f</td></tr>
+    <tr><td class="mono">runs/wav2_n65/…t=2.0000.cgns</td><td class="mono">ea6cf9c04b3230ab74a6afd15e52e5209194de0de4ce9d6943d31987db082e0e</td></tr>
+    <tr><td class="mono">runs/wavfix_n17/…t=2.0000.cgns</td><td class="mono">b8d2eeeedfc0a099e0216e0207aea99634df98597f603f4eefc17eb11f528459</td></tr>
+    <tr><td class="mono">runs/wavfix_n33/…t=2.0000.cgns</td><td class="mono">b219b083001656dce707a186835f936b9641d91247e99790058e87c5ec8e12d9</td></tr>
+    <tr><td class="mono">runs/wavfix_n65/…t=2.0000.cgns</td><td class="mono">cc0c6c3755416ba4fcddf0a0284e61ac50f440b69293554b71a232a5fef785f8</td></tr>
+    <tr><td class="mono">runs/tgv8_n65/…t=1.0000.cgns</td><td class="mono">540f03351c6a2ab3e2761872cc0327781ea06928e74fea2bfdf11a72b064e9e2</td></tr>
+    <tr><td class="mono">runs/cross/2D_TGV…t=1.0000.cgns</td><td class="mono">0c36debb81c0cc041377201fe123dbf9ccb959c3334182c87693129fb567788c</td></tr>
+    <tr><td class="mono">runs/cross/3D_TGV2D…t=1.0000.cgns</td><td class="mono">ba86a6c577d651a49720740712792ec9b80fe70a0342acdba4fd8b9d07760468</td></tr>
+  </table>
+  <div class="mini">注：omp1 与 omp14 两份诊断文件的哈希完全相同，与 P-4 的"逐字节一致"结论互为佐证。</div>
 </div>
 
 <footer>

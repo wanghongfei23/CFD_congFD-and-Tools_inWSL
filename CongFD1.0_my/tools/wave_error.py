@@ -5,7 +5,8 @@
 （任务 8 外部真值验证的查证脚本；只读 runs/wav2_n* 下已生成的 CGNS）
 
 用法:
-  cd <repo> && python3 tools/wave_error.py [t(默认2.0)]
+  cd <repo> && python3 tools/wave_error.py [t(默认2.0)] [目录前缀(默认 runs/wav2_n)]
+  例: python3 tools/wave_error.py 2.0 runs/wavfix_n     # 固定 dt 复核数据
 
 设置（与 src/src/initializer.cpp nCase=3 一致）:
   rho = 1 + 0.2 sin(x+y+z)，u=v=w=1/sqrt(3)，p=1（波矢 (1,1,1)，2pi 域严格周期）
@@ -18,8 +19,8 @@ from vortex_error import read_array, DS_PATHS, PI
 U = 1.0 / math.sqrt(3.0)          # 平流速度分量；n·U = 3/sqrt(3) = sqrt(3)
 AMP = 0.2
 
-def errs(iMax, t):
-    dirn = "runs/wav2_n%d" % iMax
+def errs(iMax, t, prefix="runs/wav2_n"):
+    dirn = "%s%d" % (prefix, iMax)
     f = "%s/3D_wave - TENO-AS-Ff_5_10 - %dx%dx%d - t=%.4f.cgns" % (dirn, iMax, iMax, iMax, t)
     rho = read_array(f, DS_PATHS["rho"])
     N = iMax - 1
@@ -38,12 +39,13 @@ def errs(iMax, t):
 
 def main():
     t = float(sys.argv[1]) if len(sys.argv) > 1 else 2.0
-    print("== 三维熵波 vs 解析解（t=%.4g）" % t)
+    prefix = sys.argv[2] if len(sys.argv) > 2 else "runs/wav2_n"
+    print("== 三维熵波 vs 解析解（t=%.4g，目录前缀 %s）" % (t, prefix))
     prev = None
     for iMax in (17, 33, 65):
-        if not os.path.isdir("runs/wav2_n%d" % iMax):
-            print("  (缺 runs/wav2_n%d，跳过)" % iMax); continue
-        linf, l2 = errs(iMax, t)
+        if not os.path.isdir("%s%d" % (prefix, iMax)):
+            print("  (缺 %s%d，跳过)" % (prefix, iMax)); continue
+        linf, l2 = errs(iMax, t, prefix)
         print("  iMax=%3d (格 %2d): Linf=%.3e  L2=%.3e" % (iMax, iMax - 1, linf, l2))
         if prev is not None:
             print("    收敛阶 (%d->%d 格): Linf %.2f / L2 %.2f"
