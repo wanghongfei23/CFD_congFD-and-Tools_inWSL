@@ -62,6 +62,12 @@ add_executable(dim3KernelTest dim3KernelTest.cpp)
 # 为dim3KernelTest目标链接相同的库
 target_link_libraries(dim3KernelTest PUBLIC libcongFD OpenMP::OpenMP_CXX)
 
+# 创建名为dim3CrossTest的可执行文件，源文件为dim3CrossTest.cpp（任务 8.6：2D↔3D code-to-code 对照）
+add_executable(dim3CrossTest dim3CrossTest.cpp)
+
+# 为dim3CrossTest目标链接相同的库
+target_link_libraries(dim3CrossTest PUBLIC libcongFD OpenMP::OpenMP_CXX)
+
 # 添加src和utils子目录，CMake会处理这些子目录中的CMakeLists.txt文件[1](@ref)
 # 通常这些子目录中定义了libcongFD库的构建规则
 add_subdirectory(src)

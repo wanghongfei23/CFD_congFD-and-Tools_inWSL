@@ -595,6 +595,26 @@ void Initializer::solInit(Block* grid,Data* sol)
                 else std::cout<<"initialize: length error \n";
             break;
 
+        case 8: // 2D TGV（周期；任务 8.6 新增——code-to-code 对照的二维载体）
+            tempsol.reserve(grid->icMax[0]*grid->icMax[1]);
+            for(int j=0;j<grid->icMax[1];j++)
+            for(int i=0;i<grid->icMax[0];i++)
+            {
+                int idx=i+j*grid->icMax[0];
+                real x=(*grid)(idx,0), y=(*grid)(idx,1);
+                real gamma=GAMMA;
+                real r=1.0;
+                real u=std::sin(x)*std::cos(y);
+                real v=-std::cos(x)*std::sin(y);
+                real p=1.0+(1.0/8.0)*(std::cos(2.0*x)+std::cos(2.0*y));
+                tempsol.push_back(r);
+                tempsol.push_back(r*u);
+                tempsol.push_back(r*v);
+                tempsol.push_back(1.0/(gamma-1.0)*p + r*(u*u+v*v)/2.0);
+            }
+            if (tempsol.size()==sol->size()) sol->setValue(tempsol);
+            else std::cout<<"initialize: length error \n";
+            break;
         default:
             break;
         }
@@ -688,6 +708,29 @@ void Initializer::solInit(Block* grid,Data* sol)
                 real ph=x+y+z;                                                  // 波矢 n=(1,1,1)，整数分量 → 2pi 域上严格周期
                 real r=1.0+0.2*std::sin(ph);                                    // 密度正弦扰动
                 real v=u, w=u, p=1.0;
+                tempsol.push_back(r);
+                tempsol.push_back(r*u);
+                tempsol.push_back(r*v);
+                tempsol.push_back(r*w);
+                tempsol.push_back(1.0/(gamma-1.0)*p + r*(u*u+v*v+w*w)/2.0);
+            }
+            if (tempsol.size()==sol->size()) sol->setValue(tempsol);
+            else std::cout<<"initialize: length error \n";
+            break;
+        case 4: // 2D TGV 的 z 均匀嵌入（任务 8.6：code-to-code 对照的三维侧；初值与 2D nCase=8 逐式相同）
+            tempsol.reserve(grid->icMax[0]*grid->icMax[1]*grid->icMax[2]);
+            for(int k=0;k<grid->icMax[2];k++)
+            for(int j=0;j<grid->icMax[1];j++)
+            for(int i=0;i<grid->icMax[0];i++)
+            {
+                int idx=i+j*grid->icMax[0]+k*grid->icMax[0]*grid->icMax[1];
+                real x=(*grid)(idx,0), y=(*grid)(idx,1);
+                real gamma=GAMMA;
+                real r=1.0;
+                real u=std::sin(x)*std::cos(y);                                 // 与 2D nCase=8 相同（z 均匀）
+                real v=-std::cos(x)*std::sin(y);
+                real w=0.0;
+                real p=1.0+(1.0/8.0)*(std::cos(2.0*x)+std::cos(2.0*y));
                 tempsol.push_back(r);
                 tempsol.push_back(r*u);
                 tempsol.push_back(r*v);
@@ -919,9 +962,35 @@ void Initializer::initBnds(Bnds* bnds,Equation* eqn,std::array<int,3> iMax,Block
             BndType Xtype=SUPERSONICOUTLET,Ytype=SUPERSONICOUTLET;
             if(info->nCase==2) {Xtype=SYMMETRYX;Ytype=SYMMETRYY;}
             if(info->nCase==3) {Xtype=SYMMETRYX;Ytype=DIRICLET;}
-            if(info->nCase==4) 
+            if(info->nCase==4)
             {
                 initDoubleMachBnds(bnds,eqn,iMax,block);
+                break;
+            }
+            if(info->nCase==8)   // 2D TGV：四面全周期（任务 8.6 新增；与 3D 六面周期同型、二维化）
+            {
+                for (int i = 0; i < iMax[1]; i++)
+                {
+                    int base = i*2;
+                    bnds->oneDBnds.at(base)=std::make_shared<OneDBnd>(nGhost,nPrim,PERIODIC1D);
+                    offsets=calOffsetInverse(1,i,0,bnds->iMax);
+                    bnds->oneDBnds.at(base)->setUpdate(eqn->prim,offsets[0],offsets[1]);
+
+                    bnds->oneDBnds.at(base+1)=std::make_shared<OneDBnd>(nGhost,nPrim,PERIODIC1D);
+                    offsets=calOffset(1,i,0,bnds->iMax);
+                    bnds->oneDBnds.at(base+1)->setUpdate(eqn->prim,offsets[0],offsets[1]);
+                }
+                for (int i = 0; i < iMax[0]; i++)
+                {
+                    int base = iMax[1]*2 + i*2;
+                    bnds->oneDBnds.at(base)=std::make_shared<OneDBnd>(nGhost,nPrim,PERIODIC1D);
+                    offsets=calOffsetInverse(2,i,0,bnds->iMax);
+                    bnds->oneDBnds.at(base)->setUpdate(eqn->prim,offsets[0],offsets[1]);
+
+                    bnds->oneDBnds.at(base+1)=std::make_shared<OneDBnd>(nGhost,nPrim,PERIODIC1D);
+                    offsets=calOffset(2,i,0,bnds->iMax);
+                    bnds->oneDBnds.at(base+1)->setUpdate(eqn->prim,offsets[0],offsets[1]);
+                }
                 break;
             }
 
@@ -979,7 +1048,7 @@ void Initializer::initBnds(Bnds* bnds,Equation* eqn,std::array<int,3> iMax,Block
             for (int i = 0; i < iMax[1]; i++)
             for (int j = 0; j < iMax[2]; j++)
             {
-                int base = (i + j*iMax[2])*2;
+                int base = (i + j*iMax[1])*2;                                // 与 getOneDBnd 一致（任务 8.6 修复 stride）
                 bnds->oneDBnds.at(base)=std::make_shared<OneDBnd>(nGhost,nPrim,PERIODIC1D);
                 offsets=calOffsetInverse(1,i,j,bnds->iMax);
                 bnds->oneDBnds.at(base)->setUpdate(eqn->prim,offsets[0],offsets[1]);
@@ -992,7 +1061,7 @@ void Initializer::initBnds(Bnds* bnds,Equation* eqn,std::array<int,3> iMax,Block
             for (int i = 0; i < iMax[0]; i++)
             for (int j = 0; j < iMax[2]; j++)
             {
-                int base = iMax[1]*iMax[2]*2 + (i + j*iMax[2])*2;
+                int base = iMax[1]*iMax[2]*2 + (i + j*iMax[0])*2;            // 与 getOneDBnd 一致（任务 8.6 修复 stride）
                 bnds->oneDBnds.at(base)=std::make_shared<OneDBnd>(nGhost,nPrim,PERIODIC1D);
                 offsets=calOffsetInverse(2,i,j,bnds->iMax);
                 bnds->oneDBnds.at(base)->setUpdate(eqn->prim,offsets[0],offsets[1]);
@@ -1005,7 +1074,7 @@ void Initializer::initBnds(Bnds* bnds,Equation* eqn,std::array<int,3> iMax,Block
             for (int i = 0; i < iMax[0]; i++)
             for (int j = 0; j < iMax[1]; j++)
             {
-                int base = (iMax[1]*iMax[2] + iMax[0]*iMax[2])*2 + (i + j*iMax[1])*2;
+                int base = (iMax[1]*iMax[2] + iMax[0]*iMax[2])*2 + (i + j*iMax[0])*2;   // 与 getOneDBnd 一致（任务 8.6 修复 stride）
                 bnds->oneDBnds.at(base)=std::make_shared<OneDBnd>(nGhost,nPrim,PERIODIC1D);
                 offsets=calOffsetInverse(3,i,j,bnds->iMax);
                 bnds->oneDBnds.at(base)->setUpdate(eqn->prim,offsets[0],offsets[1]);

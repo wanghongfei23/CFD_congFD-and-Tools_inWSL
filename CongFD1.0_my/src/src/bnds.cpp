@@ -18,26 +18,31 @@ std::array<std::shared_ptr<OneDBnd>,2> Bnds::getOneDBnd(int idim,int i,int j)
     int index;
     if (idim==1)
     {
-        index=(i+j*iMax[2])*2;
+        // x 线：横向 (y,z)，行主序快维为 y，stride = iMax[1]
+        // （任务 8.6 修复：原用 iMax[2] 作 stride——等边网格下恰好构成双射、
+        //   不等边网格会线号撞车（装配空槽/边界数据错配）。2D 时 j 恒 0，逐位不变）
+        index=(i+j*iMax[1])*2;
         res[0]=oneDBnds.at(index);
         res[1]=oneDBnds.at(index+1);
     }
     else if (idim==2)
     {
-        index=(iMax[1]*iMax[2]+i+j*iMax[2])*2;
+        // y 线：横向 (x,z)，行主序快维为 x，stride = iMax[0]（同上修复）
+        index=(iMax[1]*iMax[2]+i+j*iMax[0])*2;
         res[0]=oneDBnds.at(index);
         res[1]=oneDBnds.at(index+1);
     }
     else if (idim==3)
     {
-        index=(iMax[1]*iMax[2]+iMax[0]*iMax[2]+i+j*iMax[1])*2;
+        // z 线：横向 (x,y)，行主序快维为 x，stride = iMax[0]（同上修复）
+        index=(iMax[1]*iMax[2]+iMax[0]*iMax[2]+i+j*iMax[0])*2;
         res[0]=oneDBnds.at(index);
         res[1]=oneDBnds.at(index+1);
     }
     return res;
-    
-    
-    
+
+
+
 }
 
 /**
@@ -49,5 +54,5 @@ void Bnds::update()
     {
         ibnd->update();
     }
-    
+
 }

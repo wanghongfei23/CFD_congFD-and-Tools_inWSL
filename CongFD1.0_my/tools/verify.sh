@@ -36,5 +36,13 @@ echo "== [6] TGV 镜像对称检验（约 1 分钟）"
 python3 tools/tgv_symmetry.py || fail=1
 
 echo
+echo "== [7] 2D↔3D code-to-code 对照（重跑 1000 步 + 逐点比对；约 1 分钟）"
+if [ -f build/dim3CrossTest ] && [ -d runs/cross ]; then
+  ( cd runs/cross && ../../build/dim3CrossTest 1000 > /dev/null && python3 ../../tools/cross_compare.py ) || fail=1
+else
+  echo "  (缺 build/dim3CrossTest 或 runs/cross，跳过)"
+fi
+
+echo
 if [ "$fail" -eq 0 ]; then echo "===== 一键查证全部通过 ====="; else echo "===== 存在失败项，见上 ====="; fi
 exit $fail

@@ -46,7 +46,8 @@ static std::map<int,std::string> exampleStr2D={
     {4,"Double_Mach"},             // 双马赫反射(Double Mach Reflection)
     {5,"2D_Riemann_Config12"},     // Configuration 12: 混合波系
     {6,"KHI"},                     // 开尔文-亥姆霍兹不稳定性(Kelvin-Helmholtz Instability)
-    {7,"2D_Riemann_Config6"}       // Configuration 6: 反向涡旋结构
+    {7,"2D_Riemann_Config6"},      // Configuration 6: 反向涡旋结构
+    {8,"2D_TGV"}                   // 2D Taylor-Green 涡（周期；任务 8.6 对照用）
 };
 
 /**
@@ -464,11 +465,12 @@ int main()
             caseName = it->second;
         }
     } else if (info->dim == 3) {
-        // 三维算例命名（任务 6；后接任务 8.5）：0=3D_TGV；1=3D_uniform；2=3D_vortex；3=3D_wave
+        // 三维算例命名（任务 6；任务 8.5/8.6 续）：0=3D_TGV；1=3D_uniform；2=3D_vortex；3=3D_wave；4=3D_TGV2D
         if (info->nCase == 0) caseName = "3D_TGV";
         else if (info->nCase == 1) caseName = "3D_uniform";
         else if (info->nCase == 2) caseName = "3D_vortex";
         else if (info->nCase == 3) caseName = "3D_wave";
+        else if (info->nCase == 4) caseName = "3D_TGV2D";
     }
     // 添加网格信息到文件名
     std::string gridInfo = "";
