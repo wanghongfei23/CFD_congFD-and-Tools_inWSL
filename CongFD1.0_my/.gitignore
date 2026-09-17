@@ -2,3 +2,4 @@
 cases/*
 build/*
 runs/*
+__pycache__/
