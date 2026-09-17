@@ -165,14 +165,14 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--grid);color:v
   <div class="side-status">
     <div class="sv">8 / 11 <span class="mini">任务已完成</span></div>
     <div class="meter" style="height:9px"><div class="fill" style="width:72.7%"></div></div>
-    <div class="mini">更新 2026-09-17 ｜ 基线 92587aa</div>
+    <div class="mini">更新 2026-09-17 ｜ 已提交至 3ec7cd8</div>
   </div>
 </aside>
 <div class="content">
 <header>
   <h1>CongFD1.0_my · 项目可视化</h1>
   <div class="small">CAF-26-01034 本稿计算代码 ｜ 当前工作线：<b>三维欧拉加装</b>（任务 0–7 完成，任务 8 待启）</div>
-  <div class="mini">更新：2026-09-17（检查点·任务 7 后）｜ git 基线 <code>92587aa</code>（v3.1.3）＋任务 2–7 改动（未提交，工作区待检视）</div>
+  <div class="mini">更新：2026-09-17（任务 7 检查点＋提交完成）｜ git：<code>92587aa</code>（v3.1.3）起 7 批提交至 <code>3ec7cd8</code>（v3.1.4–v3.1.10，本地待推送）</div>
 </header>
 
 <main>
@@ -336,7 +336,7 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--grid);color:v
   <div class="qa"><b>6. 为什么重跑能对 6 月存档？</b><div class="qa-a">确定性计算＋同一工具链；比对用 <code>h5diff</code>（HDF5 带时间戳，cmp 不可达）。</div></div>
   <div class="qa"><b>7. 加新算例要改哪里？</b><div class="qa-a">命名表/预设（zoneMain＋info.cpp）→ <code>solInit</code> 加 case →（如需）<code>initBnds</code> → 运行目录放 info.txt。</div></div>
   <div class="qa"><b>8. 三维现在到哪一步了？</b><div class="qa-a">任务 2–7 全部完成——三维跑通并获得 K/Ω 物理数据（16³ 冒烟：K 31.006→30.993、Ω 92.87→92.93）；下一：任务 8 三维核验。</div></div>
-  <div class="qa"><b>9. git 怎么走？</b><div class="qa-a">分析侧只改文件、不提交、不推送；改动留工作区供检视；基线 <code>92587aa</code>。</div></div>
+  <div class="qa"><b>9. git 怎么走？</b><div class="qa-a">已按任务分批提交 7 笔（v3.1.4–v3.1.10，本地）；推送手动——待推送 8 笔（含基线 <code>92587aa</code>）。</div></div>
   <div class="qa"><b>10. 格式族谱一句话？</b><div class="qa-a">WENO→WCNS/TCNS→TENO 族（TENO=TCNS5 / TENO-S / TENO-A）→ 所提 TENO-AS；全在 interScheme.hpp。</div></div>
 </div>
 
@@ -349,7 +349,7 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--grid);color:v
 </div>
 
 <footer>
-  CongFD1.0_my / visualization —— 生成于 2026-09-17（任务 7 检查点）；依据：仓库工作区（基线 92587aa ＋ 任务 2–7 未提交改动）。
+  CongFD1.0_my / visualization —— 生成于 2026-09-17（任务 7 检查点＋提交完成）；git：7 批提交 v3.1.4–v3.1.10（本地，待推送）。
 </footer>
 </main>
 </div><!-- /content -->
