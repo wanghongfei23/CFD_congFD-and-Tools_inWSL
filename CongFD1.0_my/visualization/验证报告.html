@@ -141,6 +141,31 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--grid);color:v
   html{scroll-behavior:auto}
   .checkbar .fill{transition:none}
 }
+/* 逻辑流程图（总图/排查图） */
+.flow{max-width:940px}
+.node{background:var(--surface-1);border:1px solid var(--border);border-left:3px solid var(--s1);
+  border-radius:8px;padding:9px 13px;margin:4px 0;font-size:13.3px}
+.node .nt{font-weight:650}
+.node .nd{color:var(--ink-2);font-size:12.4px}
+.arrow{color:var(--muted);padding-left:16px;font-size:12px;margin:-1px 0;user-select:none}
+.fan{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:6px 0}
+.fan.f4{grid-template-columns:repeat(4,1fr)}
+.fan .node{margin:0;padding:8px 10px}
+.fan .node .nt{font-size:12.6px}
+.fan .node .nd{font-size:11.8px;display:block}
+.joinline{color:var(--muted);text-align:center;font-size:12px;margin:0;letter-spacing:2px}
+.verdictline{background:var(--surface-1);border:1px solid var(--good);border-radius:9px;
+  padding:10px 14px;text-align:center;font-weight:650;color:var(--good);margin:6px 0}
+@media (max-width:900px){.fan,.fan.f4{grid-template-columns:1fr 1fr}}
+/* 证据分层带 */
+.layers{display:flex;flex-direction:column;gap:7px;margin:8px 0 2px}
+.layerrow{display:grid;grid-template-columns:78px 1fr 250px;gap:10px;align-items:center}
+.layertag{font-weight:650;font-size:12.4px;border-left:4px solid var(--s1);padding:5px 8px;
+  background:var(--plane);border-radius:6px;text-align:center}
+.mininode{border:1px solid var(--border);border-radius:7px;padding:5px 10px;font-size:12.3px;
+  margin:2px 3px 2px 0;display:inline-block;background:var(--surface-1)}
+.layerwhy{font-size:12px;color:var(--muted)}
+@media (max-width:900px){.layerrow{grid-template-columns:70px 1fr}.layerwhy{display:none}}
 </style>
 </head>
 <body>
@@ -180,6 +205,25 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--grid);color:v
     <div style="font-weight:650">开发任务（三维欧拉加装，任务 2–8）已完成，五层证据链全部通过：</div>
     <div class="small">内核（7/7）→ 回归（2D 零差异）→ 系统（守恒逐位、确定性逐位、收敛 p=4.69）→ <b>外部真值（熵波 vs 解析解 4.4–4.8 阶）</b>→ 对称性（1.7e-14）。
     最终算例（任务 9：64³ 四格式 × t=10，约 6.5–7.5 h 机时）<b>按决策暂缓</b>，不在本次验收范围（见 §7）。</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="small" style="margin-bottom:6px"><b>一图看懂：验证逻辑链</b>——从"加装了什么"到"凭什么说它对"，再到"结论"：</div>
+  <div class="flow">
+    <div class="node"><span class="nt">开发任务：三维欧拉加装（五个能力缺口 · 任务 2–7）</span><span class="nd"> — 变量层 / 通量 / 特征系统 / 面心装配 / 初值与周期边界，提交 v3.1.4–v3.1.9</span></div>
+    <div class="arrow">▼ 五路独立验证（各自预定义判据，见 §1）</div>
+    <div class="fan">
+      <div class="node" style="border-left-color:var(--good)"><span class="nt">L1 内核</span><span class="nd">7/7 断言<br>函数级公式正确</span></div>
+      <div class="node" style="border-left-color:var(--good)"><span class="nt">L2 回归</span><span class="nd">2D 零差异<br>旧能力未破坏</span></div>
+      <div class="node" style="border-left-color:var(--good)"><span class="nt">L3 守恒</span><span class="nd">均匀场逐位不变<br>自由流保持</span></div>
+      <div class="node" style="border-left-color:var(--good)"><span class="nt">L3 确定性</span><span class="nd">OMP1=14 逐位<br>计算可复现</span></div>
+      <div class="node" style="border-left-color:var(--good)"><span class="nt">L4 外部真值 ★</span><span class="nd">熵波 vs 解析<br>4.4–4.8 阶；对称性 1.7e-14</span></div>
+    </div>
+    <div class="joinline">└──────────── 五路汇聚 ────────────┘</div>
+    <div class="arrow">▼</div>
+    <div class="verdictline">证据闭环：函数级正确 + 未破坏旧能力 + 内部自洽 + 与解析真值一致 → 建议验收通过</div>
+    <div class="mini">说明：五路相互独立、缺一不可——L1 不触装配与时序，L2 不触新路径，L3/L4 才到系统级；"外部真值（L4）"为最强证据，其余四路支撑与互证（详见 §2 分层图与 §3 逐条）。</div>
   </div>
 </div>
 
@@ -269,6 +313,32 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--grid);color:v
 
 <!-- ================= ② 证据总览矩阵 ================= -->
 <h2 id="s2">② 证据总览矩阵</h2>
+<div class="card">
+  <div class="small" style="margin-bottom:2px"><b>证据的三层结构</b>——"基础层保真、系统层验行为、精度层对真值"；三层独立成立、互不替代：</div>
+  <div class="layers">
+    <div class="layerrow">
+      <div class="layertag" style="border-left-color:var(--s3)">基础层</div>
+      <div>
+        <span class="mininode">P-1 内核 7/7</span><span class="mininode">P-2 回归零差异</span><span class="mininode">P-8 可回溯（git）</span>
+      </div>
+      <div class="layerwhy">证明：实现层公式正确 + 改动受控可审计</div>
+    </div>
+    <div class="layerrow">
+      <div class="layertag" style="border-left-color:var(--s1)">系统层</div>
+      <div>
+        <span class="mininode">P-3 守恒（逐位）</span><span class="mininode">P-4 确定性（逐位）</span><span class="mininode">P-7 对称性（1.7e-14）</span>
+      </div>
+      <div class="layerwhy">证明：整链行为正确——无方向性/边界/竞态缺陷</div>
+    </div>
+    <div class="layerrow">
+      <div class="layertag" style="border-left-color:var(--s2)">精度层</div>
+      <div>
+        <span class="mininode">P-5 内部收敛 p=4.69</span><span class="mininode" style="border-color:var(--s2)">⇄ 互证</span><span class="mininode">P-6 外部真值 4.4–4.8 阶</span>
+      </div>
+      <div class="layerwhy">证明：精度阶——内部泛函与外部分析解两路一致</div>
+    </div>
+  </div>
+</div>
 <div class="card">
   <div class="small" style="margin-bottom:6px">每条命题的完整证据链见 §3（点编号直达）；"查证"列为最短复核路径。</div>
   <table class="matrix">
@@ -502,8 +572,24 @@ EOF</div>
 <!-- ================= ⑤ 过程留档 ================= -->
 <h2 id="s5">⑤ 过程留档：一次"边界污染"事件的完整处理</h2>
 <div class="card">
-  <div class="small" style="margin-bottom:6px">本节展示验证中的一个真实曲折——<b>结论是排除出来的，而不是碰巧通过</b>。事件已记入 <code>runs/tgv/核验记录.md</code> §7。</div>
-  <h3 style="margin-top:4px">现象（外部验证第一轮：失败）</h3>
+  <div class="small" style="margin-bottom:6px">本节展示验证中的一个真实曲折——<b>结论是排除出来的，而不是碰巧通过</b>。事件已记入 <code>runs/tgv/核验记录.md</code> §7。先看流程图，再看数据：</div>
+  <div class="flow" style="max-width:100%">
+    <div class="node" style="border-left-color:var(--critical)"><span class="nt">现象：外部验证第一轮失败</span><span class="nd"> — Linf 0.4–0.8 · 误差自域角落生长扩散 · 与网格无关 · t=0 与解析逐位一致</span></div>
+    <div class="arrow">▼ 逐项排查（排除法，四项各留证据）</div>
+    <div class="fan f4">
+      <div class="node" style="border-left-color:var(--good)"><span class="nt">① 编号/装配链</span><span class="nd">getOneDBnd ↔ 装配 ↔ calOffset ↔ 遍历序：四处自洽 ✓</span></div>
+      <div class="node" style="border-left-color:var(--good)"><span class="nt">② 通量/特征系统</span><span class="nd">3D 与 2D 已验证版逐行对照：结构一致 ✓</span></div>
+      <div class="node" style="border-left-color:var(--good)"><span class="nt">③ 初值实现</span><span class="nd">t=0 场与解析逐位一致 ✓</span></div>
+      <div class="node" style="border-left-color:var(--warning)"><span class="nt">④ 数学构造复查</span><span class="nd">发现问题：初值在 2π 域上<b>非严格周期</b> ✗</span></div>
+    </div>
+    <div class="arrow">▼</div>
+    <div class="node" style="border-left-color:var(--warning)"><span class="nt">归因（量化）：缝合面不连续 → 周期回卷把"错缝"缝入 → 边界伪波</span><span class="nd"> — 涡场缝合两侧差 ~0.25；波矢 (1,2,3)/√14 归一化后 ∉ ℤ³</span></div>
+    <div class="arrow">▼ 判定实验：同一份代码，仅把波矢换成整数 (1,1,1)</div>
+    <div class="node" style="border-left-color:var(--good)"><span class="nt">结果：全域 0 污染点 · 误差 1.23e-4→2.14e-7 · 4.4–4.8 阶收敛</span><span class="nd">（即 P-6 本身）</span></div>
+    <div class="arrow">▼</div>
+    <div class="verdictline">结论：代码无缺陷——两轮"炸"为测试设计问题（排除法闭环）</div>
+  </div>
+  <h3 style="margin-top:12px">现象详表（数据）</h3>
   <table>
     <tr><th>测试</th><th>实测</th><th>异常特征</th></tr>
     <tr><td>等熵涡（nCase=2，64³，t=2）</td><td class="mono">Linf(u)=0.845</td><td rowspan="2">误差最大点始终位于<b>域角落</b>；污染区 t=0.5→2 从 9% 扩散至 33%（涡）/51%（波）；<b>与网格无关</b>（16/32/64 格几乎同值）；t=0 时刻与解析解<b>逐位一致</b>（Linf=0）</td></tr>
