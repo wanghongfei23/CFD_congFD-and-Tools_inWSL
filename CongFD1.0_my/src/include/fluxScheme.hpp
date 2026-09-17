@@ -631,3 +631,138 @@ constexpr std::vector<real> fDefault(const std::vector<real>& q ,std::array<real
 {
     return {q[0]};
 }
+
+/* ================= 三维（任务 3 新增；与上面 2D 版一一对应） ================= */
+
+/**
+ * @brief 计算三维Euler方程物理通量
+ * @param q 原始变量状态向量 [rho, u, v, w, p]
+ * @param norm 单位法向量（本码仅使用轴向法向 {1,0,0}/{0,1,0}/{0,0,1}）
+ * @return 通量向量（5 分量）
+ */
+constexpr std::vector<real> fEuler3D(const std::vector<real>& q ,std::array<real,3> norm)
+{
+    real r=q[0],u=q[1],v=q[2],w=q[3],p=q[4];
+    // 轴向判定：把 2D 版的 norm[0]>norm[1] 技巧扩展为三选一
+    const bool isX = (norm[0]>norm[1]) && (norm[0]>norm[2]);
+    const bool isY = (!isX) && (norm[1]>norm[2]);
+    const bool isZ = !(isX||isY);
+    real Vn = isX? u : (isY? v : w);
+    std::vector<real> res={
+        r*Vn,
+        r*u*Vn+(isX? p:0.0),
+        r*v*Vn+(isY? p:0.0),
+        r*w*Vn+(isZ? p:0.0),
+        ((u*u+v*v+w*w)/2*r+GAMMA/(GAMMA-1)*p)*Vn
+    };
+    return res;
+}
+
+/**
+ * @brief 计算三维Euler方程Roe通量（对称版本）
+ *
+ * 与 roeFlux2DSym 结构完全一致，仅扩展为 5 分量：
+ *   守恒量与 Roe 平均增加 z 向分量（w）；剪切波贡献按法向轴向
+ *   分配到两个切向动量行（法向行为 0）。
+ */
+constexpr std::array<real,5> roeFlux3DSym(real rl,real rr,real ul,real ur,real vl,real vr,real wl,real wr,real pl,real pr,std::array<real,3> norm)
+{
+    enum{
+    L,
+    R
+    };
+    std::array<real,5> FcL,FcR;
+    std::array<real,5> result;
+    if(pl<0 || pr<0)
+    {
+        std::cout<<"fluxScheme error: Pressure positivity break\n";
+    }
+    if(rr<0 || rl<0)
+    {
+        std::cout<<"fluxScheme error: Density positivity break\n";
+    }
+
+    // 轴向判定与 fEuler3D 相同
+    const bool isX = (norm[0]>norm[1]) && (norm[0]>norm[2]);
+    const bool isY = (!isX) && (norm[1]>norm[2]);
+    const bool isZ = !(isX||isY);
+
+    // 左右物理通量（H 与 Vn 均含 w 分量）
+    arr2 H;
+    H[L]=(ul*ul+vl*vl+wl*wl)/2+pl/rl*GAMMA/(GAMMA-1);
+    H[R]=(ur*ur+vr*vr+wr*wr)/2+pr/rr*GAMMA/(GAMMA-1);
+
+    arr2 Vn={ isX? ul : (isY? vl : wl), isX? ur : (isY? vr : wr)};
+    FcL[0]=rl*Vn[L];
+    FcL[1]=rl*ul*Vn[L]+(isX? pl:0.0);
+    FcL[2]=rl*vl*Vn[L]+(isY? pl:0.0);
+    FcL[3]=rl*wl*Vn[L]+(isZ? pl:0.0);
+    FcL[4]=rl*H[L]*Vn[L];
+
+    FcR[0]=rr*Vn[R];
+    FcR[1]=rr*ur*Vn[R]+(isX? pr:0.0);
+    FcR[2]=rr*vr*Vn[R]+(isY? pr:0.0);
+    FcR[3]=rr*wr*Vn[R]+(isZ? pr:0.0);
+    FcR[4]=rr*H[R]*Vn[R];
+
+    // Roe 平均（sqrt(rho) 加权）
+    double rhoAvg,uAvg,vAvg,wAvg,HAvg,cAvg,VnAvg,q_2Avg,coef1,coef2;
+    coef1=std::sqrt(rl);
+    coef2=std::sqrt(rr);
+    real divisor=1.0/(std::sqrt(rl)+std::sqrt(rr));
+    rhoAvg=std::sqrt(rl*rr);
+    uAvg=(coef1*ul+coef2*ur)*divisor;
+    vAvg=(coef1*vl+coef2*vr)*divisor;
+    wAvg=(coef1*wl+coef2*wr)*divisor;
+    HAvg=(coef1*H[L]+coef2*H[R])*divisor;
+    q_2Avg=(uAvg*uAvg+vAvg*vAvg+wAvg*wAvg)/2;
+
+    cAvg=std::sqrt((GAMMA-1)*(HAvg-q_2Avg));
+    VnAvg= isX? uAvg : (isY? vAvg : wAvg);
+
+    // 特征值 |Vn±c|、|Vn|（含熵修正，与 2D 版一致）
+    double lambda[3]={std::abs(VnAvg-cAvg),std::abs(VnAvg),std::abs(VnAvg+cAvg)};
+    real eps=0.05*(std::abs(VnAvg)+cAvg);
+    for(int i=0;i<3;i++)
+    {
+        if(lambda[i]<eps)
+        {
+            lambda[i]=(lambda[i]*lambda[i]+eps*eps)/(2.0*eps);
+        }
+    }
+
+    // 数值耗散项（5 分量）
+    double deltaP=pr-pl,deltaVn=Vn[R]-Vn[L],deltaU=ur-ul,deltaV=vr-vl,deltaW=wr-wl,
+           deltaRho=rr-rl,coef;
+    double FDispassion[5];
+    coef1=(deltaP-rhoAvg*cAvg*deltaVn)/(2.0*cAvg*cAvg);
+    FDispassion[0]=lambda[0]*(coef1*1);
+    FDispassion[1]=lambda[0]*(coef1*(uAvg-cAvg*norm[0]));
+    FDispassion[2]=lambda[0]*(coef1*(vAvg-cAvg*norm[1]));
+    FDispassion[3]=lambda[0]*(coef1*(wAvg-cAvg*norm[2]));
+    FDispassion[4]=lambda[0]*(coef1*(HAvg-cAvg*VnAvg));
+
+    coef=(deltaP+rhoAvg*cAvg*deltaVn)/(2.0*cAvg*cAvg);
+    FDispassion[0]+=lambda[2]*(coef*1);
+    FDispassion[1]+=lambda[2]*(coef*(uAvg+cAvg*norm[0]));
+    FDispassion[2]+=lambda[2]*(coef*(vAvg+cAvg*norm[1]));
+    FDispassion[3]+=lambda[2]*(coef*(wAvg+cAvg*norm[2]));
+    FDispassion[4]+=lambda[2]*(coef*(HAvg+cAvg*VnAvg));
+
+    // 剪切波项：法向动量行为 0，两个切向动量行与能量行承接速度跳变
+    coef2=deltaRho-deltaP/(cAvg*cAvg);
+    FDispassion[0]+=lambda[1]*(coef2*1.0 + rhoAvg*0.0);
+    FDispassion[1]+=lambda[1]*(coef2*uAvg + rhoAvg*(isX? 0.0 : deltaU));
+    FDispassion[2]+=lambda[1]*(coef2*vAvg + rhoAvg*(isY? 0.0 : deltaV));
+    FDispassion[3]+=lambda[1]*(coef2*wAvg + rhoAvg*(isZ? 0.0 : deltaW));
+    FDispassion[4]+=lambda[1]*(coef2*q_2Avg
+                              + rhoAvg*(isX? (vAvg*deltaV+wAvg*deltaW)
+                                      : (isY? (uAvg*deltaU+wAvg*deltaW)
+                                            : (uAvg*deltaU+vAvg*deltaV))));
+
+    for(int i=0;i<5;i++)
+    {
+        result[i]=(FcL[i]+FcR[i]-FDispassion[i])/2;
+    }
+    return result;
+}
