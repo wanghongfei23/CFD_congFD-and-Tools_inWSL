@@ -185,7 +185,7 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--grid);color:v
   <div class="hero"><div class="fig">9 / 11</div><div class="cap">任务已完成（任务 0–8；下一次：任务 9「64³ 四格式实算与出图」——外部真值验证已通过）</div></div>
   <div class="tiles">
     <div class="tile"><div class="tl">内核测试</div><div class="tv">7 / 7</div><div class="tn">任务 3/4/7 七项断言全过（通量 3＋特征 2＋K/Ω 2）</div></div>
-    <div class="tile"><div class="tl">三维核验（任务 8）</div><div class="tv">三腿 ✓＋外验 ✓</div><div class="tn">纯性/确定性逐位；TGV p=4.69；熵波 vs 解析 4.4–4.8 阶</div></div>
+    <div class="tile"><div class="tl">三维核验（任务 8）</div><div class="tv">三腿 ✓＋外验 ✓＋对照 ✓</div><div class="tn">纯性/确定性逐位；TGV p=4.69；熵波 vs 解析 4.4–4.8 阶；2D↔3D 对照 8e-15</div></div>
     <div class="tile"><div class="tl">外部真值验证</div><div class="tv">4.4–4.8 阶</div><div class="tn">熵波解析解逐点对比（16/32/64 格，全域 0 污染）</div></div>
     <div class="tile"><div class="tl">2D 基线回归</div><div class="tv">零差异</div><div class="tn">81×81 重跑 vs 存档 h5diff；2D 未生成 diagnostics.txt（零影响）</div></div>
   </div>
@@ -226,8 +226,9 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--grid);color:v
     <tr><td>收敛</td><td>TGV K 泛函（16/32/64 格）</td><td>精度阶（内部一致性）</td><td><span class="chip done"><span class="dot"></span>p = 4.69</span></td></tr>
     <tr><td>真值</td><td>熵波 vs 解析解逐点（16/32/64 格）</td><td>精度阶（外部真值）</td><td><span class="chip done"><span class="dot"></span>4.4–4.8 阶</span></td></tr>
     <tr><td>对称</td><td>TGV 镜像关系（64³ t=1，3770 步）</td><td>无方向性/边界缺陷</td><td><span class="chip done"><span class="dot"></span>1.7e-14</span></td></tr>
+    <tr><td>对照</td><td>2D↔3D code-to-code（参照实现对照）</td><td>3D 分派链在 2D 退化下与已验证 2D 路径数值等价</td><td><span class="chip done"><span class="dot"></span>8e-15</span></td></tr>
   </table>
-  <div class="mini" style="margin-top:6px">过程留档：等熵涡（nCase=2）与初版熵波曾出现边界污染（误差自角落生长）——逐项排查编号/装配/通量后归因为<b>初值在 2π 域上非严格周期</b>（测试设计问题）；判定实验（整数波矢 (1,1,1)）全域 0 污染通过 → 代码无缺陷。详见核验记录 §7。</div>
+  <div class="mini" style="margin-top:6px">过程留档：等熵涡（nCase=2）与初版熵波曾出现边界污染（误差自角落生长）——逐项排查编号/装配/通量后归因为<b>初值在 2π 域上非严格周期</b>（测试设计问题）；判定实验（整数波矢 (1,1,1)）全域 0 污染通过 → 代码无缺陷。另：2D↔3D 对照曾暴露等边网格掩盖的面线号缺陷（已修复，等边逐位零差异核验通过）。详见核验记录 §7/§8.6。</div>
 </div>
 
 <!-- ② 架构分层 -->
@@ -299,7 +300,7 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--grid);color:v
   <div class="node">逐维空间离散（x/y/z 按线并行）—— 每条线内部：</div>
   <div class="node" style="margin-left:24px">重构：特征系统 → 5 点格式插值 <span class="chip done"><span class="dot"></span>特征 3D ✓ 任务 4</span><span class="chip done"><span class="dot"></span>面心重构 ✓ 任务 5</span></div>
   <div class="node" style="margin-left:24px">通量（Roe） <span class="chip done"><span class="dot"></span>3D ✓ 任务 3</span></div>
-  <div class="node" style="margin-left:24px">差分（MND6 面通量差） <span class="chip done"><span class="dot"></span>3D ✓ 任务 5</span></div>
+  <div class="node" style="margin-left:24px">差分（MND6：节点+面混合） <span class="chip done"><span class="dot"></span>3D ✓ 任务 5</span></div>
   <div class="arrow">▼</div>
   <div class="node">RHS → SSP-RK3 → 新守恒量；t += dt</div>
   <div class="arrow">▼</div>

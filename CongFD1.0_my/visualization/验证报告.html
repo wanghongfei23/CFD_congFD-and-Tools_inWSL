@@ -176,11 +176,12 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--grid);color:v
     <a href="#s0" class="on">⓪ 结论与快速验收</a>
     <a href="#s1">① 验收对象与判据</a>
     <a href="#s2">② 证据总览矩阵</a>
-    <a href="#s3">③ 逐条详证（P-1…P-8）</a>
+    <a href="#s3">③ 逐条详证（P-1…P-9）</a>
     <a href="#s4">④ 图表证据</a>
     <a href="#s5">⑤ 过程留档（边界污染事件）</a>
     <a href="#s6">⑥ git 证据</a>
     <a href="#s7">⑦ 未覆盖项（如实声明）</a>
+    <a href="#s8">⑧ 验证框架与文献</a>
     <a href="index.html">↩ 进度仪表盘</a>
   </nav>
   <div class="side-status">
@@ -192,7 +193,7 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--grid);color:v
 <div class="content">
 <header>
   <h1>三维欧拉加装 · 验证报告</h1>
-  <div class="small">验收对象：CongFD1.0_my 三维（无粘欧拉）能力加装（任务 2–8）｜ 基线 <code>92587aa</code> → 提交 v3.1.4–v3.1.14＋本轮（v3.1.15）</div>
+  <div class="small">验收对象：CongFD1.0_my 三维（无粘欧拉）能力加装（任务 2–8）｜ 基线 <code>92587aa</code> → 提交 v3.1.4–v3.1.17＋本轮（v3.1.18）</div>
   <div class="mini">本报告所有断言均可查证：看什么文件、跑什么命令、期望什么输出——逐条给出；命令可一键复制，在 WSL 项目目录直接执行。</div>
 </header>
 <main>
@@ -202,8 +203,8 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--grid);color:v
 <div class="verdict pass">
   <div class="big">建议验收通过</div>
   <div>
-    <div style="font-weight:650">开发任务（三维欧拉加装，任务 2–8）已完成，五层证据链全部通过：</div>
-    <div class="small">内核（7/7）→ 回归（2D 零差异）→ 系统（守恒逐位、确定性逐位、收敛 p=4.69）→ <b>外部真值（熵波 vs 解析解 4.4–4.8 阶）</b>→ 对称性（1.7e-14）。
+    <div style="font-weight:650">开发任务（三维欧拉加装，任务 2–8）已完成，各层证据链全部通过：</div>
+    <div class="small">内核（7/7）→ 回归（2D 零差异）→ 系统（守恒逐位、确定性逐位、收敛 p=4.69）→ <b>外部真值（熵波 vs 解析解 4.4–4.8 阶）</b>→ 对称性（1.7e-14）→ <b>参照实现对照（2D↔3D 退化一致，8e-15）</b>。
     最终算例（任务 9：64³ 四格式 × t=10，约 6.5–7.5 h 机时）<b>按决策暂缓</b>，不在本次验收范围（见 §7）。</div>
   </div>
 </div>
@@ -212,23 +213,24 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--grid);color:v
   <div class="small" style="margin-bottom:6px"><b>一图看懂：验证逻辑链</b>——从"加装了什么"到"凭什么说它对"，再到"结论"：</div>
   <div class="flow">
     <div class="node"><span class="nt">开发任务：三维欧拉加装（五个能力缺口 · 任务 2–7）</span><span class="nd"> — 变量层 / 通量 / 特征系统 / 面心装配 / 初值与周期边界，提交 v3.1.4–v3.1.9</span></div>
-    <div class="arrow">▼ 五路独立验证（各自预定义判据，见 §1）</div>
-    <div class="fan">
+    <div class="arrow">▼ 六路独立验证（各自预定义判据，见 §1）</div>
+    <div class="fan" style="grid-template-columns:repeat(6,1fr)">
       <div class="node" style="border-left-color:var(--good)"><span class="nt">L1 内核</span><span class="nd">7/7 断言<br>函数级公式正确</span></div>
       <div class="node" style="border-left-color:var(--good)"><span class="nt">L2 回归</span><span class="nd">2D 零差异<br>旧能力未破坏</span></div>
       <div class="node" style="border-left-color:var(--good)"><span class="nt">L3 守恒</span><span class="nd">均匀场逐位不变<br>自由流保持</span></div>
       <div class="node" style="border-left-color:var(--good)"><span class="nt">L3 确定性</span><span class="nd">OMP1=14 逐位<br>计算可复现</span></div>
+      <div class="node" style="border-left-color:var(--good)"><span class="nt">L5 参照对照</span><span class="nd">2D↔3D 退化一致<br>相对差 8e-15</span></div>
       <div class="node" style="border-left-color:var(--good)"><span class="nt">L4 外部真值 ★</span><span class="nd">熵波 vs 解析<br>4.4–4.8 阶；对称性 1.7e-14</span></div>
     </div>
-    <div class="joinline">└──────────── 五路汇聚 ────────────┘</div>
+    <div class="joinline">└──────────── 六路汇聚 ────────────┘</div>
     <div class="arrow">▼</div>
-    <div class="verdictline">证据闭环：函数级正确 + 未破坏旧能力 + 内部自洽 + 与解析真值一致 → 建议验收通过</div>
-    <div class="mini">说明：五路相互独立、缺一不可——L1 不触装配与时序，L2 不触新路径，L3/L4 才到系统级；"外部真值（L4）"为最强证据，其余四路支撑与互证（详见 §2 分层图与 §3 逐条）。</div>
+    <div class="verdictline">证据闭环：函数级正确 + 未破坏旧能力 + 内部自洽 + 退化一致 + 与解析真值一致 → 建议验收通过</div>
+    <div class="mini">说明：各路面相互独立、缺一不可——L1 不触装配与时序，L2 不触新路径，L3/L4/L5 才到系统级；"外部真值（L4）"为最强证据，其余路支撑与互证（详见 §2 分层图与 §3 逐条）。L5 曾暴露一个等边网格掩盖的面线号缺陷并已修复（§3 P-9 附注）。</div>
   </div>
 </div>
 
 <div class="card">
-  <div class="small" style="margin-bottom:2px"><b>快速验收清单</b>（6 项；每项 ≤ 2 分钟，勾选进度自动保存）——按顺序即可完成一轮完整验收：</div>
+  <div class="small" style="margin-bottom:2px"><b>快速验收清单</b>（7 项；每项 ≤ 2 分钟，勾选进度自动保存）——按顺序即可完成一轮完整验收：</div>
   <div class="checkbar"><div class="fill" id="ck-bar2"></div></div>
 
   <div class="checkitem" data-ck="k1">
@@ -284,7 +286,16 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--grid);color:v
     </div>
   </div>
 
-  <div class="mini" style="margin-top:6px">说明：②③④ 的内容包含在 ① 里（① 是完整版）；若只跑 ① 即可视为完成 ①–④。⑤⑥ 独立。</div>
+  <div class="checkitem" data-ck="k7">
+    <input type="checkbox">
+    <div>
+      <div class="ct">⑦ 抽查：2D↔3D 参照实现对照（重跑并逐点比对）</div>
+      <div class="cm">约 1 分钟；末尾应输出"最大相对差 ~1e-15 → PASS"：</div>
+      <div class="cmd" data-cmd="cd ~/Documents/GitHubWSL/CFD_congFD-and-Tools_inWSL/CongFD1.0_my/runs/cross &amp;&amp; ../../build/dim3CrossTest 1000 &amp;&amp; python3 ../../tools/cross_compare.py">cd ~/Documents/GitHubWSL/CFD_congFD-and-Tools_inWSL/CongFD1.0_my/runs/cross &amp;&amp; ../../build/dim3CrossTest 1000 &amp;&amp; python3 ../../tools/cross_compare.py</div>
+    </div>
+  </div>
+
+  <div class="mini" style="margin-top:6px">说明：②③④⑦ 的内容包含在 ① 里（① 是完整版）；若只跑 ① 即可视为完成 ①–④、⑦。⑤⑥ 独立。</div>
 </div>
 
 <!-- ================= ① 验收对象与判据 ================= -->
@@ -319,9 +330,9 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--grid);color:v
     <div class="layerrow">
       <div class="layertag" style="border-left-color:var(--s3)">基础层</div>
       <div>
-        <span class="mininode">P-1 内核 7/7</span><span class="mininode">P-2 回归零差异</span><span class="mininode">P-8 可回溯（git）</span>
+        <span class="mininode">P-1 内核 7/7</span><span class="mininode">P-2 回归零差异</span><span class="mininode">P-9 2D↔3D 对照 8e-15</span><span class="mininode">P-8 可回溯（git）</span>
       </div>
-      <div class="layerwhy">证明：实现层公式正确 + 改动受控可审计</div>
+      <div class="layerwhy">证明：实现层公式正确 + 退化一致 + 改动受控可审计</div>
     </div>
     <div class="layerrow">
       <div class="layertag" style="border-left-color:var(--s1)">系统层</div>
@@ -387,8 +398,14 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--grid);color:v
     </tr>
     <tr>
       <td>P-8</td><td>改动可回溯（每步有提交、工作区干净）</td>
-      <td class="mono">v3.1.4–v3.1.14＋本轮，工作区空</td><td>——</td>
+      <td class="mono">v3.1.4–v3.1.17，工作区空</td><td>——</td>
       <td class="small">§6：git log / status / show</td>
+      <td><span class="chip done"><span class="dot"></span>通过</span></td>
+    </tr>
+    <tr>
+      <td><b>P-9</b></td><td><b>参照实现对照：3D 链在 2D 退化下与已验证 2D 路径数值等价</b></td>
+      <td class="mono">相对差 8.1e-15；z 均匀性 = 0</td><td>判据 ≤1e-12，实测优于 ~120 倍</td>
+      <td class="small">§3-P9：python3 tools/cross_compare.py</td>
       <td><span class="chip done"><span class="dot"></span>通过</span></td>
     </tr>
   </table>
@@ -442,7 +459,7 @@ h5diff "2D_Riemann_Config4 - TENO-AS-Ff_5_10 - 81x81 - t=0.3000.cgns" ~/Document
   <div class="evh"><span class="pid">P-3</span><span class="evt">自由流保持：均匀场精确不演化</span><span class="chip done"><span class="dot"></span>通过</span></div>
   <dl>
     <dt>主张</dt><dd>均匀场（ρ=1, u=1, v=2, w=3, p=100）在周期域中经 0→0.6 时间演化后，<b>逐位不变</b>（每个格点、每个变量）。</dd>
-    <dt>为何有效</dt><dd>机制上必然成立的三条件：①Roe 通量左右同态时耗散项 ≡ 0（<b>已由 P-1 断言 2 验证</b>）→ 面通量=物理通量；②MND6 差分系数 (1,−8,8,−1)/12 之和为零 → 对常数场精确给零；③周期边界对常值场是恒等。三者成立则 RHS ≡ 0，解逐位不变。因此本测试能"审核"整条装配链：任何索引/符号/方向错位都会产生 O(1) 扰动，不可能保持机器精度。</dd>
+    <dt>为何有效</dt><dd>机制上必然成立的三条件：①Roe 通量左右同态时耗散项 ≡ 0（<b>已由 P-1 断言 2 验证</b>）→ 面通量=物理通量；②MND6 差分（节点项 −(3/10)(f<sub>i+1</sub>−f<sub>i−1</sub>)/h ＋ 面项 (3/2)(F<sub>i+1</sub>−F<sub>i</sub>)/h ＋ (1/30)(F<sub>i+2</sub>−F<sub>i−1</sub>)/h 的混合形式，系数经源码核对）对常数场各项差值恒为零；③周期边界对常值场是恒等。三者成立则 RHS ≡ 0，解逐位不变。因此本测试能"审核"整条装配链：任何索引/符号/方向错位都会产生 O(1) 扰动，不可能保持机器精度。</dd>
     <dt>判据</dt><dd>K 首末相对差 ≤ 1e-12；Ω ≤ 1e-12；无 NaN。（来源：方案任务 8-1）</dd>
     <dt>看什么</dt><dd><code>runs/tgv8_uni/diagnostics.txt</code>（原始输出）</dd>
     <dt>实测</dt><dd>K 两行<b>逐位相同</b>（相对差 = 0，严格优于判据）；Ω 两行均为严格 0；与解析值 K=7·(2π)³=1736.3514940968932… <b>逐位吻合</b>。加固：h5diff 全场（5 变量 × 17³）t=0 vs t=0.6 <b>零差异</b>——守恒的是每个格点的每个变量，不只是积分量。</dd>
@@ -553,6 +570,31 @@ EOF</div>
   </dl>
 </div>
 
+<div class="ev" id="p9">
+  <div class="evh"><span class="pid">P-9</span><span class="evt">参照实现对照：2D↔3D code-to-code</span><span class="chip done"><span class="dot"></span>通过</span></div>
+  <dl>
+    <dt>主张</dt><dd>同一初值（2D TGV）分别在 dim=2 与 dim=3（z 均匀嵌入）下、以固定 dt 同步推进 1000 步（t=1），逐点差 ≤ 8.1e-15（机器舍入量级）。</dd>
+    <dt>为何有效</dt><dd>两版共用 RK3 时间积分与逐维框架，<b>唯一差异是空间离散的 2D/3D 分派链</b>（面心重构、Roe 通量、差分装配、周期装配）——而 2D 路径已被历史算例独立验证（P-2）。因此"两版轨迹在舍入级一致"直接证明 3D 分派链在二维退化下的等价性（V&amp;V 中的 code-to-code / 参照实现对照做法）。</dd>
+    <dt>判据</dt><dd>逐点相对差 ≤ 1e-12（预设）；z 方向均匀性保持。（来源：任务 8.6 设计，先于运行定义）</dd>
+    <dt>看什么</dt><dd><code>dim3CrossTest.cpp</code>（固定 dt 直调 solve()）；<code>runs/cross/</code> 输出；<code>tools/cross_compare.py</code></dd>
+    <dt>实测</dt><dd>max|2D−3D| 相对差：ρ 8.1e-15、u 6.1e-15、v 5.2e-15、p 3.8e-15（优于判据 ~120 倍）；z 均匀性（层 0 vs 层 1）= 0.000e+00。</dd>
+    <dt>附注（对照过程的真实收获）</dt><dd>本对照首次运行即暴露了一个<b>等边网格掩盖的隐藏缺陷</b>：面"线号"公式的 stride 误用了后一维尺寸（等边网格下恰好双射、不等边网格立即撞车→空槽段错误）。已修复（bnds.cpp 与 3D 六面装配共 6 处）；并实测证明修复对既有结论零影响：2D 回归零差异、同一 3D 等边算例修复前后 <b>h5diff 逐位零差异</b>。详见核验记录 §8.6。</dd>
+    <dt>边界</dt><dd>覆盖"2D 退化方向"的等价性；真三维行为由 P-5/P-6/P-7 覆盖。已知约束：周期网格单向格数须 ≥ 幽灵层数（4）——更短时周期回卷需绕域多圈、超出当前单次映射能力（见 §7）。</dd>
+  </dl>
+  <div class="cmd" data-cmd="cd ~/Documents/GitHubWSL/CFD_congFD-and-Tools_inWSL/CongFD1.0_my/runs/cross &amp;&amp; ../../build/dim3CrossTest 1000 &amp;&amp; python3 ../../tools/cross_compare.py">cd ~/Documents/GitHubWSL/CFD_congFD-and-Tools_inWSL/CongFD1.0_my/runs/cross &amp;&amp; ../../build/dim3CrossTest 1000 &amp;&amp; python3 ../../tools/cross_compare.py</div>
+  <details><summary>原始输出（一次完整运行）</summary><pre>2D 文件: 2D_TGV - TENO-AS-Ff_5_10 - 33x33 - t=1.0000.cgns
+3D 文件: 3D_TGV2D - TENO-AS-Ff_5_10 - 33x33x9 - t=1.0000.cgns
+  rho: max|2D-3D| = 1.066e-14   相对 = 8.093e-15
+       z 均匀性（层0 vs 层1）max|diff| = 0.000e+00
+  u  : max|2D-3D| = 6.439e-15   相对 = 6.088e-15
+       z 均匀性（层0 vs 层1）max|diff| = 0.000e+00
+  v  : max|2D-3D| = 5.551e-15   相对 = 5.248e-15
+       z 均匀性（层0 vs 层1）max|diff| = 0.000e+00
+  p  : max|2D-3D| = 6.439e-15   相对 = 3.771e-15
+       z 均匀性（层0 vs 层1）max|diff| = 0.000e+00
+== 最大相对差 = 8.093e-15  → PASS（判据 1e-12）</pre></details>
+</div>
+
 <!-- ================= ④ 图表证据 ================= -->
 <h2 id="s4">④ 图表证据</h2>
 <div class="figwrap">
@@ -635,9 +677,12 @@ EOF</div>
     <tr><td class="num">9</td><td class="mono">ad6dc31</td><td>v3.1.12-三维核验记录与解析解基准算例（熵波）</td><td class="mono">5 文件 +240/−2</td></tr>
     <tr><td class="num">10</td><td class="mono">112d2f7</td><td>v3.1.13-忽略 Python 缓存</td><td class="mono">1 文件 +1</td></tr>
     <tr><td class="num">11</td><td class="mono">1dcdbb2</td><td>v3.1.14-可视化同步（任务 8＋外验）</td><td class="mono">1 文件 +39/−19</td></tr>
-    <tr><td class="num">12</td><td class="mono">（本轮）</td><td>v3.1.15-验证报告与查证工具（本报告＋tools/wave_error.py、tgv_symmetry.py、verify.sh）</td><td class="mono">git log -1 即见</td></tr>
+    <tr><td class="num">12</td><td class="mono">9a4df40</td><td>v3.1.15-验证报告（验收用 HTML）与查证工具</td><td class="mono">5 文件 +866</td></tr>
+    <tr><td class="num">13</td><td class="mono">115212e</td><td>v3.1.16-验证报告图示化（逻辑链总图/证据分层/排查流程）</td><td class="mono">1 文件 +88/−2</td></tr>
+    <tr><td class="num">14</td><td class="mono">c979682</td><td>v3.1.17-2D↔3D 参照实现对照（code-to-code）与面线号 stride 修复</td><td class="mono">9 文件 +296/−62</td></tr>
+    <tr><td class="num">15</td><td class="mono">（本轮）</td><td>v3.1.18-验证报告更新（P-9 对照证据、验证框架与文献对齐）</td><td class="mono">git log -1 即见</td></tr>
   </table>
-  <div class="cmd" data-cmd="cd ~/Documents/GitHubWSL/CFD_congFD-and-Tools_inWSL/CongFD1.0_my &amp;&amp; git log --oneline -13 &amp;&amp; echo '--- 工作区（应为空）:' &amp;&amp; git status --short &amp;&amp; echo '--- 任一步回溯:' &amp;&amp; git show --stat ca1e723">cd ~/Documents/GitHubWSL/CFD_congFD-and-Tools_inWSL/CongFD1.0_my &amp;&amp; git log --oneline -13 &amp;&amp; echo '--- 工作区（应为空）:' &amp;&amp; git status --short &amp;&amp; echo '--- 任一步回溯:' &amp;&amp; git show --stat ca1e723</div>
+  <div class="cmd" data-cmd="cd ~/Documents/GitHubWSL/CFD_congFD-and-Tools_inWSL/CongFD1.0_my &amp;&amp; git log --oneline -16 &amp;&amp; echo '--- 工作区（应为空）:' &amp;&amp; git status --short &amp;&amp; echo '--- 任一步回溯:' &amp;&amp; git show --stat ca1e723">cd ~/Documents/GitHubWSL/CFD_congFD-and-Tools_inWSL/CongFD1.0_my &amp;&amp; git log --oneline -16 &amp;&amp; echo '--- 工作区（应为空）:' &amp;&amp; git status --short &amp;&amp; echo '--- 任一步回溯:' &amp;&amp; git show --stat ca1e723</div>
   <div class="mini" style="margin-top:4px">说明：以上全部为<b>本地提交</b>；推送（同步远端）按此前约定<b>由你手动执行</b>——推送前可在远端先不复现，全部证据在本地即可查证。</div>
 </div>
 
@@ -651,13 +696,50 @@ EOF</div>
     <tr><td>与文献定量对比（Fu 2018 图 24 / Brachet 1984 数据点）</td><td><span class="chip todo"><span class="dot"></span>未做</span></td><td>任务 9 产出后执行</td></tr>
     <tr><td>跨平台/跨编译器复现</td><td><span class="chip todo"><span class="dot"></span>未测</span></td><td>当前证据均在 WSL/本机工具链内</td></tr>
     <tr><td>等熵涡算例（nCase=2）判据化使用</td><td><span class="chip warn"><span class="dot"></span>留档</span></td><td>因 §5 所述周期性问题，仅留档；如需使用须改大域/周期化</td></tr>
+    <tr><td>线长 &lt; 幽灵层数（4）的周期网格方向</td><td><span class="chip warn"><span class="dot"></span>已知约束</span></td><td>周期回卷需绕域多圈、超出 OneDBnd 单次映射能力（实测 z=2 格越界、z=8 正常）；常规算例不受影响（见 §3 P-9）</td></tr>
     <tr><td>粘性（NS）档</td><td><span class="chip todo"><span class="dot"></span>后置</span></td><td>决策门之后（方案 §3.4/§3.5）</td></tr>
   </table>
   <div class="mini" style="margin-top:6px">方法学边界：P-5 的收敛阶为两区间点测量（未做阶数极限外推）；P-4 线程样本为 39 步；P-6 为单波数测量。以上均在对应卡片的"边界"栏注明。</div>
 </div>
 
+<!-- ================= ⑧ 验证框架与文献 ================= -->
+<h2 id="s8">⑧ 验证框架与文献对齐</h2>
+<div class="card">
+  <div class="small" style="margin-bottom:6px">本报告的验证体系按 V&amp;V 通行框架的三层分类组织；做法与其对应的领域文献逐一对齐（引文均在本地库中有原文可查）：</div>
+  <table>
+    <tr><th>框架层</th><th>含义</th><th>本报告对应证据</th><th>结果</th></tr>
+    <tr>
+      <td><b>Code Verification</b><br><span class="mini">代码正确性</span></td>
+      <td>证明"方程被正确离散与实现"——解析真值、参照实现、精度阶</td>
+      <td>P-1 内核断言；P-6 熵波 vs 解析解（4.4–4.8 阶）；P-9 2D↔3D 参照对照；P-2 回归</td>
+      <td><span class="chip done"><span class="dot"></span>通过</span></td>
+    </tr>
+    <tr>
+      <td><b>Solution Verification</b><br><span class="mini">解的不确定度</span></td>
+      <td>估计给定算例的数值不确定度——网格收敛与 Richardson 外推</td>
+      <td>P-5 三档网格收敛（p=4.69）；<b>GCI</b>（细网格）= 1.25·|ε|/(r<sup>p</sup>−1) ≈ <b>1.7e-5</b>（r=2，ε=|K33−K65|/K65=3.3e-4，Fs=1.25）</td>
+      <td><span class="chip done"><span class="dot"></span>已给出</span></td>
+    </tr>
+    <tr>
+      <td><b>Validation</b><br><span class="mini">物理验证</span></td>
+      <td>与实验/文献物理数据对比</td>
+      <td>任务 9（Fu 2018 图 24 / Brachet 数据）——<b>按决策暂缓</b>，见 §7</td>
+      <td><span class="chip warn"><span class="dot"></span>未做</span></td>
+    </tr>
+  </table>
+  <h3 style="margin-top:12px">做法与文献逐条对齐（原文可查）</h3>
+  <table>
+    <tr><th>本报告做法</th><th>领域文献中的同构做法</th></tr>
+    <tr><td>用精确解评估精度阶（P-6 熵波）</td><td>Wang et al. 2018（WCNS 高阶求解器验证）："<i>vortex transport flow, the exact solution can be found and used as a reference to evaluate the actual order of accuracy</i>"</td></tr>
+    <tr><td>收敛图中叠加名义阶参考斜率线（图 A 的 h⁵ 参考线）</td><td>Pirozzoli 2002（compact-WENO）："<i>dashed lines with an N⁻⁵ slope, which is consistent with the formal order of accuracy</i>"</td></tr>
+    <tr><td>网格收敛研究（P-5 三档）</td><td>Wang et al. 2020：errors against grid size / grid requirements（同族做法）</td></tr>
+    <tr><td>参照实现对照（P-9）</td><td>V&amp;V 通行手法 code-to-code comparison（以已独立验证的实现作参照系）</td></tr>
+  </table>
+  <div class="mini" style="margin-top:6px">说明与边界：①"框架层"采用 V&amp;V 文献与标准中通用的三层分类术语（Code Verification / Solution Verification / Validation）；②本报告<b>不引具体标准条文</b>（AIAA G-077、ASME V&amp;V 20 等标准原文不在手边，按"引用先查原文"的原则不作条文级引用，仅采用其通行术语与做法）；③GCI 安全系数 Fs=1.25（Roache 建议值）。</div>
+</div>
+
 <footer>
-  三维欧拉加装 · 验证报告 —— 生成于 2026-09-17（任务 8 检查点＋外部真值验证后）｜ 底稿：<code>runs/tgv/核验记录.md</code>｜ 查证工具：<code>tools/verify.sh</code>（一键）、<code>tools/wave_error.py</code>、<code>tools/tgv_symmetry.py</code>｜ 本报告随提交 v3.1.15 入库。<br>
+  三维欧拉加装 · 验证报告 —— 生成于 2026-09-17（任务 8 检查点＋外部真值验证＋参照实现对照）｜ 底稿：<code>runs/tgv/核验记录.md</code>（§8.6 为 code-to-code 对照）｜ 查证工具：<code>tools/verify.sh</code>（一键）、<code>wave_error.py</code>、<code>tgv_symmetry.py</code>、<code>cross_compare.py</code>｜ 本报告随提交 v3.1.15–v3.1.18 入库。<br>
   <a href="index.html">↩ 返回进度仪表盘</a>
 </footer>
 </main>
