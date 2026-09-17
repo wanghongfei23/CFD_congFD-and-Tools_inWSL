@@ -463,6 +463,10 @@ int main()
         if (it != exampleStr2D.end()) {
             caseName = it->second;
         }
+    } else if (info->dim == 3) {
+        // 三维算例命名（任务 6）：0=3D_TGV；1=3D_uniform
+        if (info->nCase == 0) caseName = "3D_TGV";
+        else if (info->nCase == 1) caseName = "3D_uniform";
     }
     // 添加网格信息到文件名
     std::string gridInfo = "";

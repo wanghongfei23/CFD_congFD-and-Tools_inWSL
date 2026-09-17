@@ -594,11 +594,57 @@ void Initializer::solInit(Block* grid,Data* sol)
             if (tempsol.size()==sol->size()) sol->setValue(tempsol);
                 else std::cout<<"initialize: length error \n";
             break;
-            
+
         default:
             break;
         }
-        
+        else if (grid->dim==3)
+        switch (info->nCase)
+        {
+        case 0: // Taylor-Green 涡（无粘档，Fu et al. 2018 式 (40)；任务 6 新增）
+            tempsol.reserve(grid->icMax[0]*grid->icMax[1]*grid->icMax[2]);
+            for(int k=0;k<grid->icMax[2];k++)
+            for(int j=0;j<grid->icMax[1];j++)
+            for(int i=0;i<grid->icMax[0];i++)
+            {
+                int idx=i+j*grid->icMax[0]+k*grid->icMax[0]*grid->icMax[1];
+                real x=(*grid)(idx,0), y=(*grid)(idx,1), z=(*grid)(idx,2);
+                real gamma=GAMMA;
+                real r=1.0;
+                real u=std::sin(x)*std::cos(y)*std::cos(z);
+                real v=-std::cos(x)*std::sin(y)*std::cos(z);
+                real w=0.0;
+                real p=100.0+(1.0/16.0)*((std::cos(2*x)+std::cos(2*y))*(2.0+std::cos(2*z))-2.0);
+                tempsol.push_back(r);
+                tempsol.push_back(r*u);
+                tempsol.push_back(r*v);
+                tempsol.push_back(r*w);
+                tempsol.push_back(1.0/(gamma-1.0)*p + r*(u*u+v*v+w*w)/2.0);
+            }
+            if (tempsol.size()==sol->size()) sol->setValue(tempsol);
+            else std::cout<<"initialize: length error \n";
+            break;
+        case 1: // 均匀场（三维核验用；任务 6 新增）
+            tempsol.reserve(grid->icMax[0]*grid->icMax[1]*grid->icMax[2]);
+            for(int k=0;k<grid->icMax[2];k++)
+            for(int j=0;j<grid->icMax[1];j++)
+            for(int i=0;i<grid->icMax[0];i++)
+            {
+                real gamma=GAMMA;
+                real r=1.0, u=1.0, v=2.0, w=3.0, p=100.0;
+                tempsol.push_back(r);
+                tempsol.push_back(r*u);
+                tempsol.push_back(r*v);
+                tempsol.push_back(r*w);
+                tempsol.push_back(1.0/(gamma-1.0)*p + r*(u*u+v*v+w*w)/2.0);
+            }
+            if (tempsol.size()==sol->size()) sol->setValue(tempsol);
+            else std::cout<<"initialize: length error \n";
+            break;
+        default:
+            break;
+        }
+
     /*case end*/
     default:
         break;
@@ -866,7 +912,52 @@ void Initializer::initBnds(Bnds* bnds,Equation* eqn,std::array<int,3> iMax,Block
                     bnds->oneDBnds.at(2*i+iMax[1]*2+1)->setValue(dirVars);
                 }
             }
-            
+
+        }
+        else if (eqn->dim==3)
+        {
+            // 三维：六面全周期（任务 6 新增；装配方式与 2D 同型：
+            // 每条线两端各一个 OneDBnd，偶数下标=左（取域尾反向值），奇数下标=右）
+            std::array<int,2> offsets;
+            // X 向面
+            for (int i = 0; i < iMax[1]; i++)
+            for (int j = 0; j < iMax[2]; j++)
+            {
+                int base = (i + j*iMax[2])*2;
+                bnds->oneDBnds.at(base)=std::make_shared<OneDBnd>(nGhost,nPrim,PERIODIC1D);
+                offsets=calOffsetInverse(1,i,j,bnds->iMax);
+                bnds->oneDBnds.at(base)->setUpdate(eqn->prim,offsets[0],offsets[1]);
+
+                bnds->oneDBnds.at(base+1)=std::make_shared<OneDBnd>(nGhost,nPrim,PERIODIC1D);
+                offsets=calOffset(1,i,j,bnds->iMax);
+                bnds->oneDBnds.at(base+1)->setUpdate(eqn->prim,offsets[0],offsets[1]);
+            }
+            // Y 向面
+            for (int i = 0; i < iMax[0]; i++)
+            for (int j = 0; j < iMax[2]; j++)
+            {
+                int base = iMax[1]*iMax[2]*2 + (i + j*iMax[2])*2;
+                bnds->oneDBnds.at(base)=std::make_shared<OneDBnd>(nGhost,nPrim,PERIODIC1D);
+                offsets=calOffsetInverse(2,i,j,bnds->iMax);
+                bnds->oneDBnds.at(base)->setUpdate(eqn->prim,offsets[0],offsets[1]);
+
+                bnds->oneDBnds.at(base+1)=std::make_shared<OneDBnd>(nGhost,nPrim,PERIODIC1D);
+                offsets=calOffset(2,i,j,bnds->iMax);
+                bnds->oneDBnds.at(base+1)->setUpdate(eqn->prim,offsets[0],offsets[1]);
+            }
+            // Z 向面
+            for (int i = 0; i < iMax[0]; i++)
+            for (int j = 0; j < iMax[1]; j++)
+            {
+                int base = (iMax[1]*iMax[2] + iMax[0]*iMax[2])*2 + (i + j*iMax[1])*2;
+                bnds->oneDBnds.at(base)=std::make_shared<OneDBnd>(nGhost,nPrim,PERIODIC1D);
+                offsets=calOffsetInverse(3,i,j,bnds->iMax);
+                bnds->oneDBnds.at(base)->setUpdate(eqn->prim,offsets[0],offsets[1]);
+
+                bnds->oneDBnds.at(base+1)=std::make_shared<OneDBnd>(nGhost,nPrim,PERIODIC1D);
+                offsets=calOffset(3,i,j,bnds->iMax);
+                bnds->oneDBnds.at(base+1)->setUpdate(eqn->prim,offsets[0],offsets[1]);
+            }
         }
         
 
