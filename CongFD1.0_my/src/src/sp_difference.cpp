@@ -21,6 +21,8 @@ void SpaceDis::difHCS()
             fFunction = &fEuler1D;
         else if (info->dim == 2)
             fFunction = &fEuler2D;
+        else if (info->dim == 3)          // 三维（任务 5 补齐：此前 dim==3 时函数指针为空）
+            fFunction = &fEuler3D;
     } else {
         fFunction = &fDefault;
     }
@@ -117,6 +119,8 @@ void SpaceDis::difMND6()
             fFunction = &fEuler1D;
         else if (info->dim == 2)
             fFunction = &fEuler2D;
+        else if (info->dim == 3)          // 三维（任务 5 补齐：此前 dim==3 时函数指针为空）
+            fFunction = &fEuler3D;
     } else {
         fFunction = &fDefault;
     }

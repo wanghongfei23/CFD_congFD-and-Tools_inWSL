@@ -54,6 +54,8 @@ SpaceDis::SpaceDis(int n_, Data* data_, Data* rhs_, std::shared_ptr<OneDBnd> bnd
             calTypeFlux = &SpaceDis::calFluxEuler1D;
         } else if (info->dim == 2) {
             calTypeFlux = &SpaceDis::calFluxEuler2D;
+        } else if (info->dim == 3) {   // 三维（任务 5 新增）
+            calTypeFlux = &SpaceDis::calFluxEuler3D;
         }
 
         break;

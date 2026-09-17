@@ -272,3 +272,29 @@ void SpaceDis::calFluxEuler2D(int i)
         fluxAt(i, ivar) = iflux[ivar];
     }
 }
+
+/**
+ * @brief 计算三维欧拉方程的界面通量（任务 5 新增；镜像 calFluxEuler2D）
+ * @param i 网格点索引（面索引）
+ *
+ * W 前 5 值为左状态 [rho,u,v,w,p]、后 5 值为右状态；
+ * 负压/负密度时回退为相邻格值（含格间简单回退，与 2D 版同型）。
+ */
+void SpaceDis::calFluxEuler3D(int i)
+{
+    auto W = this->recon3DFaceCenter(i);
+
+    if (W[4] < 0 || W[0] < 0) {
+        std::cout << "SpaceDis error L: negative pressure i=" << i << "\n";
+        W = { at(i-1,0), at(i-1,1), at(i-1,2), at(i-1,3), at(i-1,4), W[5], W[6], W[7], W[8], W[9] };
+    }
+    if (W[9] < 0 || W[5] < 0) {
+        std::cout << "SpaceDis error R: negative pressure i=" << i << "\n";
+        W = { W[0], W[1], W[2], W[3], W[4], at(i,0), at(i,1), at(i,2), at(i,3), at(i,4) };
+    }
+
+    std::array<real, 5> iflux = roeFlux3DSym(W[0],W[5],W[1],W[6],W[2],W[7],W[3],W[8],W[4],W[9],norm);
+    for (int ivar = 0; ivar < 5; ivar++) {
+        fluxAt(i, ivar) = iflux[ivar];
+    }
+}

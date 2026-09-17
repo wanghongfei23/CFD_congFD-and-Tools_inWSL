@@ -108,7 +108,13 @@ class SpaceDis
      * @param i 网格点索引
      */
     void calFluxEuler2D(int);
-    
+
+    /**
+     * @brief 计算三维欧拉方程通量（任务 5 新增）
+     * @param i 网格点索引
+     */
+    void calFluxEuler3D(int);
+
     /**
      * @brief 计算精度测试通量
      * @param i 网格点索引
@@ -209,6 +215,13 @@ class SpaceDis
      * @return 重构后的变量值向量
      */
     std::vector<real> recon2DFaceCenter(int i);
+
+    /**
+     * @brief 三维界面中心重构方法（任务 5 新增）
+     * @param i 网格点索引
+     * @return 重构后的变量值向量（左右各 5 个，共 10 个）
+     */
+    std::vector<real> recon3DFaceCenter(int i);
 
     /// 五点插值函数指针
     real (*inter5) (std::array<real,5>)=nullptr;

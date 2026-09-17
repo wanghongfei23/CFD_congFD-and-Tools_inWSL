@@ -355,6 +355,55 @@ std::vector<real> SpaceDis::recon2DFaceCenter(int i)
     // 返回左右两侧的物理变量值，共8个值（每侧4个变量：密度、x速度、y速度、压力）
     return { resTempL[0], resTempL[1], resTempL[2], resTempL[3], resTempR[0], resTempR[1], resTempR[2], resTempR[3] };
 }
+
+/**
+ * @brief 三维界面中心重构函数（任务 5 新增；镜像 recon2DFaceCenter，10 值返回）
+ * @param i 网格点索引（面索引）
+ * @return 左右两侧各 5 个原始变量：{rho,u,v,w,p}_L, {rho,u,v,w,p}_R
+ *
+ * 与 2D 版结构一致：以左右两格状态做 Roe 平均构造特征系统，
+ * 在 6 点模板（j=i-3..i+2）上把 5 个特征场分别用 inter5 格式插值，
+ * 再变换回原始量（格式本体由 inter5 指针决定，与维度无关）。
+ */
+std::vector<real> SpaceDis::recon3DFaceCenter(int i)
+{
+    std::array<real, 5> primL, primR;
+    memcpy(&primL[0], &at(i - 1, 0), nVar * sizeof(real));
+    memcpy(&primR[0], &at(i, 0), nVar * sizeof(real));
+
+    eigensystemEuler3D eig = eigensystemEuler3D(primL, primR, norm);
+
+    std::array<real, 5> q1L,q2L,q3L,q4L,q5L,q1R,q2R,q3R,q4R,q5R;
+    for (int j = i - 3; j < i + 3; j++)
+    {
+        enum { R, U, V, W, P };
+        auto charTemp = eig.primToChar({ at(j, R), at(j, U), at(j, V), at(j, W), at(j, P) });
+
+        int iLocal = j - i + 3;
+        if (iLocal < 5) {
+            q1L[iLocal]=charTemp[0]; q2L[iLocal]=charTemp[1]; q3L[iLocal]=charTemp[2];
+            q4L[iLocal]=charTemp[3]; q5L[iLocal]=charTemp[4];
+        }
+        iLocal = i + 2 - j;
+        if (iLocal < 5) {
+            q1R[iLocal]=charTemp[0]; q2R[iLocal]=charTemp[1]; q3R[iLocal]=charTemp[2];
+            q4R[iLocal]=charTemp[3]; q5R[iLocal]=charTemp[4];
+        }
+    }
+
+    auto Q1LL = inter5(q1L); auto Q1RR = inter5(q1R);
+    auto Q2LL = inter5(q2L); auto Q2RR = inter5(q2R);
+    auto Q3LL = inter5(q3L); auto Q3RR = inter5(q3R);
+    auto Q4LL = inter5(q4L); auto Q4RR = inter5(q4R);
+    auto Q5LL = inter5(q5L); auto Q5RR = inter5(q5R);
+
+    auto resTempL = eig.charToPrim({ Q1LL, Q2LL, Q3LL, Q4LL, Q5LL });
+    auto resTempR = eig.charToPrim({ Q1RR, Q2RR, Q3RR, Q4RR, Q5RR });
+
+    return { resTempL[0],resTempL[1],resTempL[2],resTempL[3],resTempL[4],
+             resTempR[0],resTempR[1],resTempR[2],resTempR[3],resTempR[4] };
+}
+
 /**
  * @brief 二维特征重构左侧函数
  * @param i 网格点索引
