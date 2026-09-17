@@ -1,9 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"/home/archwanghongfei/Documents/GitHubWSL/CFD_congFD-and-Tools_inWSL/CongFD1.0_my/build/cmake_install.cmake",
-		"/home/archwanghongfei/Documents/GitHubWSL/CFD_congFD-and-Tools_inWSL/CongFD1.0_my/build/src/cmake_install.cmake",
-		"/home/archwanghongfei/Documents/GitHubWSL/CFD_congFD-and-Tools_inWSL/CongFD1.0_my/build/utils/cmake_install.cmake"
-	],
-	"Parallel" : false
-}
