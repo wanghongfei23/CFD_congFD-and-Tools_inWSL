@@ -4,8 +4,23 @@
  */
 
 #include "blockSolver.hpp"
+#include "diagnostics.hpp"
 #include <fstream>
 #include <iomanip>
+#include <filesystem>
+
+/**
+ * @brief 追加一行诊断输出（时间、K、Ω）到当前目录 diagnostics.txt（任务 7 新增；仅三维调用）
+ */
+static void appendDiagnostics(Info* info, Data* prim, Block* block)
+{
+    real K,Omega;
+    calcDiagnostics(prim, block->getICMax(), info->interval, K, Omega);
+    bool fresh=!std::filesystem::exists("diagnostics.txt");
+    std::ofstream diag("diagnostics.txt", std::ios::app);
+    if(fresh) diag << "# t K Omega\n";
+    diag << std::scientific << std::setprecision(16) << info->t << " " << K << " " << Omega << "\n";
+}
 
 /**
  * @brief BlockSolver类的默认构造函数
@@ -301,6 +316,7 @@ void BlockSolver::stepsLoopCFL()
         {
             outputGrid();                                                     // 输出网格信息到文件
             outputPrim();                                                     // 输出原始变量到文件
+            if(info->dim==3) appendDiagnostics(info, eqn->getPrim(), block);  // 三维：追加 K/Ω 诊断行（任务 7）
         }
 
         auto dt=getTimeIntervalExplicit();                                    // 根据CFL条件自动计算时间步长
@@ -362,6 +378,7 @@ void BlockSolver::stepsLoopCFL()
     // 求解完成后输出最终结果
     outputGrid();                                                             // 求解完成后输出最终网格信息
     outputPrim();                                                             // 求解完成后输出最终原始变量
+    if(info->dim==3) appendDiagnostics(info, eqn->getPrim(), block);          // 三维：追加 K/Ω 诊断行（任务 7）
 }
 
 /**
