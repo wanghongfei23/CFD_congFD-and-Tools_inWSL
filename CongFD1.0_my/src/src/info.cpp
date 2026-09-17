@@ -249,7 +249,9 @@ static std::map<int,std::string> exampleStr2D={
  */
 static std::map<int,std::string> exampleStr3D={
     {0,"3D_TGV"},       // 三维 Taylor-Green 涡
-    {1,"3D_uniform"}    // 均匀场（三维核验用）
+    {1,"3D_uniform"},   // 均匀场（三维核验用）
+    {2,"3D_vortex"},    // 三维等熵涡对流（解析解基准）
+    {3,"3D_wave"}       // 三维熵波（解析解基准，边界敏感检验）
 };
 
 /**

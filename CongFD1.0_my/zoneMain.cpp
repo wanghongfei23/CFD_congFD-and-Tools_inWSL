@@ -464,9 +464,11 @@ int main()
             caseName = it->second;
         }
     } else if (info->dim == 3) {
-        // 三维算例命名（任务 6）：0=3D_TGV；1=3D_uniform
+        // 三维算例命名（任务 6；后接任务 8.5）：0=3D_TGV；1=3D_uniform；2=3D_vortex；3=3D_wave
         if (info->nCase == 0) caseName = "3D_TGV";
         else if (info->nCase == 1) caseName = "3D_uniform";
+        else if (info->nCase == 2) caseName = "3D_vortex";
+        else if (info->nCase == 3) caseName = "3D_wave";
     }
     // 添加网格信息到文件名
     std::string gridInfo = "";

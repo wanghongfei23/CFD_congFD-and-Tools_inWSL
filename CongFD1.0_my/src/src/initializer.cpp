@@ -641,6 +641,62 @@ void Initializer::solInit(Block* grid,Data* sol)
             if (tempsol.size()==sol->size()) sol->setValue(tempsol);
             else std::cout<<"initialize: length error \n";
             break;
+        case 2: // 三维等熵涡对流（解析解基准；涡轴与平流沿体对角，三方向链路全激活）
+            tempsol.reserve(grid->icMax[0]*grid->icMax[1]*grid->icMax[2]);
+            for(int k=0;k<grid->icMax[2];k++)
+            for(int j=0;j<grid->icMax[1];j++)
+            for(int i=0;i<grid->icMax[0];i++)
+            {
+                int idx=i+j*grid->icMax[0]+k*grid->icMax[0]*grid->icMax[1];
+                real x=(*grid)(idx,0), y=(*grid)(idx,1), z=(*grid)(idx,2);
+                real gamma=GAMMA;
+                real pi=3.14159265358979323846;
+                real epsV=5.0;                                                  // 涡强度参数（2D 标准测试常用值）
+                real n3=1.0/std::sqrt(3.0);                                     // 体对角单位向量分量
+                real Ux=n3, Uy=n3, Uz=n3;                                       // 平流速度（|U|=1，与涡轴同向）
+                real dx=x-pi, dy=y-pi, dz=z-pi;                                 // 相对涡心（域中心）坐标
+                real dn=(dx+dy+dz)*n3;                                          // d·n：沿涡轴分量
+                real r2=dx*dx+dy*dy+dz*dz-dn*dn;                                // 到涡轴距离平方
+                real g=std::exp((1.0-r2)*0.5);                                  // 高斯核 e^{(1-r^2)/2}
+                real amp=epsV/(2.0*pi)*g;
+                real u=Ux+amp*n3*(dz-dy);                                       // 周向速度扰动 = (eps/2pi) g (n × d)
+                real v=Uy+amp*n3*(dx-dz);
+                real w=Uz+amp*n3*(dy-dx);
+                // 等熵涡平衡：T 修正 + 等熵关系给出 rho、p（解析平移解 q(x,t)=q0(x-Ut)）
+                real T=1.0-(gamma-1.0)*epsV*epsV/(8.0*gamma*pi*pi)*std::exp(1.0-r2);
+                real r=std::pow(T,1.0/(gamma-1.0));
+                real p=std::pow(T,gamma/(gamma-1.0));
+                tempsol.push_back(r);
+                tempsol.push_back(r*u);
+                tempsol.push_back(r*v);
+                tempsol.push_back(r*w);
+                tempsol.push_back(1.0/(gamma-1.0)*p + r*(u*u+v*v+w*w)/2.0);
+            }
+            if (tempsol.size()==sol->size()) sol->setValue(tempsol);
+            else std::cout<<"initialize: length error \n";
+            break;
+        case 3: // 三维熵波（密度正弦沿斜向匀速平流；欧拉方程严格精确解，且波矢取整数分量保证周期相容）
+            tempsol.reserve(grid->icMax[0]*grid->icMax[1]*grid->icMax[2]);
+            for(int k=0;k<grid->icMax[2];k++)
+            for(int j=0;j<grid->icMax[1];j++)
+            for(int i=0;i<grid->icMax[0];i++)
+            {
+                int idx=i+j*grid->icMax[0]+k*grid->icMax[0]*grid->icMax[1];
+                real x=(*grid)(idx,0), y=(*grid)(idx,1), z=(*grid)(idx,2);
+                real gamma=GAMMA;
+                real u=1.0/std::sqrt(3.0);                                      // 平流速度 U=(1,1,1)/sqrt(3)
+                real ph=x+y+z;                                                  // 波矢 n=(1,1,1)，整数分量 → 2pi 域上严格周期
+                real r=1.0+0.2*std::sin(ph);                                    // 密度正弦扰动
+                real v=u, w=u, p=1.0;
+                tempsol.push_back(r);
+                tempsol.push_back(r*u);
+                tempsol.push_back(r*v);
+                tempsol.push_back(r*w);
+                tempsol.push_back(1.0/(gamma-1.0)*p + r*(u*u+v*v+w*w)/2.0);
+            }
+            if (tempsol.size()==sol->size()) sol->setValue(tempsol);
+            else std::cout<<"initialize: length error \n";
+            break;
         default:
             break;
         }
