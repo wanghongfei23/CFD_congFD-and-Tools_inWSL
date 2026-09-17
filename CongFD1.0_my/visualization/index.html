@@ -155,6 +155,7 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--grid);color:v
   <div class="brand">CongFD1.0_my<span class="mini">项目可视化 ｜ 三维欧拉加装进行中</span></div>
   <nav class="side-nav">
     <a href="#progress" class="on">① 开发进度</a>
+    <a href="#verify">核验证据矩阵</a>
     <a href="#arch">② 架构分层</a>
     <a href="#flow">③ 数据流管线</a>
     <a href="#d3">④ 三维加装清单</a>
@@ -163,16 +164,16 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--grid);color:v
     <a href="#about">⑦ 说明</a>
   </nav>
   <div class="side-status">
-    <div class="sv">8 / 11 <span class="mini">任务已完成</span></div>
-    <div class="meter" style="height:9px"><div class="fill" style="width:72.7%"></div></div>
-    <div class="mini">更新 2026-09-17 ｜ 已提交至 3ec7cd8</div>
+    <div class="sv">9 / 11 <span class="mini">任务已完成</span></div>
+    <div class="meter" style="height:9px"><div class="fill" style="width:81.8%"></div></div>
+    <div class="mini">更新 2026-09-17 ｜ 已提交至 ad6dc31</div>
   </div>
 </aside>
 <div class="content">
 <header>
   <h1>CongFD1.0_my · 项目可视化</h1>
-  <div class="small">CAF-26-01034 本稿计算代码 ｜ 当前工作线：<b>三维欧拉加装</b>（任务 0–7 完成，任务 8 待启）</div>
-  <div class="mini">更新：2026-09-17（任务 7 检查点＋提交完成）｜ git：<code>92587aa</code>（v3.1.3）起 7 批提交至 <code>3ec7cd8</code>（v3.1.4–v3.1.10，本地待推送）</div>
+  <div class="small">CAF-26-01034 本稿计算代码 ｜ 当前工作线：<b>三维欧拉加装</b>（任务 0–8 完成＋外部真值验证通过，任务 9 待启）</div>
+  <div class="mini">更新：2026-09-17（任务 8 检查点＋外验）｜ git：提交至 <code>ad6dc31</code>（v3.1.4–v3.1.12，本地待推送）</div>
 </header>
 
 <main>
@@ -180,17 +181,18 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--grid);color:v
 <!-- ① 进度 -->
 <h2 id="progress">① 开发进度</h2>
 <div class="card">
-  <div class="hero"><div class="fig">8 / 11</div><div class="cap">任务已完成（任务 0–7；下一次：任务 8「三维核验」——K/Ω 物理数据已在手）</div></div>
+  <div class="hero"><div class="fig">9 / 11</div><div class="cap">任务已完成（任务 0–8；下一次：任务 9「64³ 四格式实算与出图」——外部真值验证已通过）</div></div>
   <div class="tiles">
     <div class="tile"><div class="tl">内核测试</div><div class="tv">7 / 7</div><div class="tn">任务 3/4/7 七项断言全过（通量 3＋特征 2＋K/Ω 2）</div></div>
+    <div class="tile"><div class="tl">三维核验（任务 8）</div><div class="tv">三腿 ✓＋外验 ✓</div><div class="tn">纯性/确定性逐位；TGV p=4.69；熵波 vs 解析 4.4–4.8 阶</div></div>
+    <div class="tile"><div class="tl">外部真值验证</div><div class="tv">4.4–4.8 阶</div><div class="tn">熵波解析解逐点对比（16/32/64 格，全域 0 污染）</div></div>
     <div class="tile"><div class="tl">2D 基线回归</div><div class="tv">零差异</div><div class="tn">81×81 重跑 vs 存档 h5diff；2D 未生成 diagnostics.txt（零影响）</div></div>
-    <div class="tile"><div class="tl">三维缺口</div><div class="tv">6 / 6</div><div class="tn">全部已通：变量层·通量·特征系统·面心装配·初值/边界·K/Ω 诊断</div></div>
   </div>
-  <div class="meter" role="img" aria-label="总进度 8/11"><div class="fill" style="width:72.7%"></div></div>
+  <div class="meter" role="img" aria-label="总进度 9/11"><div class="fill" style="width:81.8%"></div></div>
   <div class="strip" aria-hidden="true">
     <div class="seg done"></div><div class="seg done"></div><div class="seg done"></div><div class="seg done"></div>
     <div class="seg done"></div><div class="seg done"></div><div class="seg done"></div><div class="seg done"></div>
-    <div class="seg next"></div><div class="seg"></div><div class="seg"></div>
+    <div class="seg done"></div><div class="seg next"></div><div class="seg"></div>
   </div>
   <div class="mini">图例：<span class="chip done"><span class="dot"></span>已完成</span>　<span class="chip next"><span class="dot"></span>下一任务</span>　<span class="chip todo"><span class="dot"></span>待办</span></div>
   <table>
@@ -203,11 +205,28 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--grid);color:v
     <tr><td class="num">5</td><td>面心重构＋通量装配＋分派</td><td class="st"><span class="chip done"><span class="dot"></span>已完成</span></td><td>重构/装配/分派/差分补丁就绪；2D 回归零差异——三维"能算一步"</td></tr>
     <tr><td class="num">6</td><td>TGV 初值＋六面周期边界</td><td class="st"><span class="chip done"><span class="dot"></span>已完成</span></td><td>六面周期＋TGV/均匀场初值；17³ 冒烟通过（均匀场 rhoLinf≈0）</td></tr>
     <tr><td class="num">7</td><td>K/Ω 诊断</td><td class="st"><span class="chip done"><span class="dot"></span>已完成</span></td><td>内核测试 7/7（K(0)=π³ 至 1e-14）；16³ 冒烟 K/Ω 序列正常</td></tr>
-    <tr><td class="num">8</td><td>三维核验（三腿）</td><td class="st"><span class="chip next"><span class="dot"></span>下一任务</span></td><td>—（均匀场纯性／OMP 逐位／收敛阶）</td></tr>
-    <tr><td class="num">9</td><td>64³ 四格式实算＋出图</td><td class="st"><span class="chip todo"><span class="dot"></span>待办</span></td><td>—</td></tr>
+    <tr><td class="num">8</td><td>三维核验（三腿）</td><td class="st"><span class="chip done"><span class="dot"></span>已完成</span></td><td>纯性/确定性逐位一致；TGV p=4.69；熵波 vs 解析 4.4–4.8 阶；对称性 1.7e-14</td></tr>
+    <tr><td class="num">9</td><td>64³ 四格式实算＋出图</td><td class="st"><span class="chip next"><span class="dot"></span>下一任务</span></td><td>—（四格式 t=10，对齐 Fu 2018 图 24）</td></tr>
     <tr><td class="num">10</td><td>交付与后续</td><td class="st"><span class="chip todo"><span class="dot"></span>待办</span></td><td>—</td></tr>
   </table>
-  <div class="mini" style="margin-top:6px">规则：分析侧只改文件、不提交；提交与推送均手动——状态以《推进方案》§3.3 执行记录为准（本页与其同源）。</div>
+  <div class="mini" style="margin-top:6px">规则：提交/推送均手动（已按任务分批提交至 ad6dc31）；状态以《推进方案》§3.3 执行记录为准（本页与其同源）。</div>
+</div>
+
+<!-- 三维核验证据矩阵（任务 8＋外验） -->
+<h2 id="verify">三维核验证据矩阵</h2>
+<div class="card">
+  <div class="small" style="margin-bottom:6px"><b>任务 8＋外部真值验证</b>——详见 <code>runs/tgv/核验记录.md</code>（随 v3.1.12 入库）</div>
+  <table>
+    <tr><th>层级</th><th>测试</th><th>证明什么</th><th>结果</th></tr>
+    <tr><td>内核</td><td>7/7 断言（通量／特征／K-Ω 锚点）</td><td>函数级公式正确</td><td><span class="chip done"><span class="dot"></span>通过</span></td></tr>
+    <tr><td>回归</td><td>2D 81² h5diff 对比存档</td><td>未破坏既有能力</td><td><span class="chip done"><span class="dot"></span>零差异</span></td></tr>
+    <tr><td>守恒</td><td>均匀场 K/Ω 逐位＋全场比对</td><td>自由流保持</td><td><span class="chip done"><span class="dot"></span>严格零</span></td></tr>
+    <tr><td>确定性</td><td>OMP 1 vs 14（诊断＋全场）</td><td>计算可复现</td><td><span class="chip done"><span class="dot"></span>逐位一致</span></td></tr>
+    <tr><td>收敛</td><td>TGV K 泛函（16/32/64 格）</td><td>精度阶（内部一致性）</td><td><span class="chip done"><span class="dot"></span>p = 4.69</span></td></tr>
+    <tr><td>真值</td><td>熵波 vs 解析解逐点（16/32/64 格）</td><td>精度阶（外部真值）</td><td><span class="chip done"><span class="dot"></span>4.4–4.8 阶</span></td></tr>
+    <tr><td>对称</td><td>TGV 镜像关系（64³ t=1，3770 步）</td><td>无方向性/边界缺陷</td><td><span class="chip done"><span class="dot"></span>1.7e-14</span></td></tr>
+  </table>
+  <div class="mini" style="margin-top:6px">过程留档：等熵涡（nCase=2）与初版熵波曾出现边界污染（误差自角落生长）——逐项排查编号/装配/通量后归因为<b>初值在 2π 域上非严格周期</b>（测试设计问题）；判定实验（整数波矢 (1,1,1)）全域 0 污染通过 → 代码无缺陷。详见核验记录 §7。</div>
 </div>
 
 <!-- ② 架构分层 -->
@@ -303,7 +322,7 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--grid);color:v
     <tr><td>TGV 初值 ＋ 六面周期边界 ＋ 命名表</td><td class="num">6</td><td><span class="chip done"><span class="dot"></span>已完成</span></td><td>六面周期＋初值；17³ 冒烟通过（三维跑通）</td></tr>
     <tr><td>K/Ω 诊断输出</td><td class="num">7</td><td><span class="chip done"><span class="dot"></span>已完成</span></td><td>内核测试 K(0)=π³、Ω(0)=3π³；16³ 冒烟 diagnostics.txt 正常</td></tr>
   </table>
-  <div class="mini" style="margin-top:6px">后续：任务 8 三维核验（纯性/线程确定性/收敛阶）→ 任务 9 64³ 四格式实算出图 → 任务 10 交付。</div>
+  <div class="mini" style="margin-top:6px">后续：任务 9 四格式 64³ 实算（t=10）＋出图 → 任务 10 交付；任务 8 三维核验已完成 ✓（见上方证据矩阵）。</div>
 </div>
 
 <!-- ⑤ 数据图表 -->
@@ -318,7 +337,7 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--grid);color:v
 </div>
 
 <div class="card">
-  <div class="small" style="margin-bottom:6px"><b>图 2 · 本次三维加装改动（任务 2–7，新增行数）</b>——含 3 个新文件（dim3KernelTest 105＋diagnostics 77）；累计 +850/−7</div>
+  <div class="small" style="margin-bottom:6px"><b>图 2 · 本次三维加装改动（任务 2–8，新增行数）</b>——含 4 个新文件（dim3KernelTest 105＋diagnostics 77＋vortex_error 110）；累计 +1022/−9</div>
   <div class="bars" id="bars-diff"></div>
   <details><summary>表格视图（图 2）</summary><div class="body">
     <table id="table-diff"><tr><th>文件</th><th>新增行</th><th>文件</th><th>新增行</th></tr></table>
@@ -335,7 +354,7 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--grid);color:v
   <div class="qa"><b>5. 重构走"特征"还是"逐分量"？</b><div class="qa-a">特征：Roe 平均 → 特征系统 → 特征变量 5 点插值 → 回原始量。3D 特征系统已就绪（任务 4）。</div></div>
   <div class="qa"><b>6. 为什么重跑能对 6 月存档？</b><div class="qa-a">确定性计算＋同一工具链；比对用 <code>h5diff</code>（HDF5 带时间戳，cmp 不可达）。</div></div>
   <div class="qa"><b>7. 加新算例要改哪里？</b><div class="qa-a">命名表/预设（zoneMain＋info.cpp）→ <code>solInit</code> 加 case →（如需）<code>initBnds</code> → 运行目录放 info.txt。</div></div>
-  <div class="qa"><b>8. 三维现在到哪一步了？</b><div class="qa-a">任务 2–7 全部完成——三维跑通并获得 K/Ω 物理数据（16³ 冒烟：K 31.006→30.993、Ω 92.87→92.93）；下一：任务 8 三维核验。</div></div>
+  <div class="qa"><b>8. 三维现在到哪一步了？</b><div class="qa-a">任务 0–8 全部完成：三维核验三腿通过＋外部真值验证（熵波 vs 解析解 4.4–4.8 阶）；下一：任务 9 四格式 64³ 实算出图。</div></div>
   <div class="qa"><b>9. git 怎么走？</b><div class="qa-a">已按任务分批提交 7 笔（v3.1.4–v3.1.10，本地）；推送手动——待推送 8 笔（含基线 <code>92587aa</code>）。</div></div>
   <div class="qa"><b>10. 格式族谱一句话？</b><div class="qa-a">WENO→WCNS/TCNS→TENO 族（TENO=TCNS5 / TENO-S / TENO-A）→ 所提 TENO-AS；全在 interScheme.hpp。</div></div>
 </div>
@@ -349,7 +368,7 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--grid);color:v
 </div>
 
 <footer>
-  CongFD1.0_my / visualization —— 生成于 2026-09-17（任务 7 检查点＋提交完成）；git：7 批提交 v3.1.4–v3.1.10（本地，待推送）。
+  CongFD1.0_my / visualization —— 生成于 2026-09-17（任务 8 检查点＋外部真值验证）；git：提交至 ad6dc31（v3.1.4–v3.1.12，本地待推送）。
 </footer>
 </main>
 </div><!-- /content -->
@@ -377,12 +396,13 @@ var MODS = [
 ];
 var DIFF = [
   ["src/src/eigenSystem.cpp",160],
+  ["src/src/initializer.cpp",150],
   ["src/include/fluxScheme.hpp",135],
+  ["tools/vortex_error.py（新）",110],
   ["dim3KernelTest.cpp（新）",105],
-  ["src/src/initializer.cpp",94],
   ["src/src/diagnostics.cpp（新）",59],
   ["src/include/eigenSystem.hpp",55],
-  ["src/src/info.cpp",51],
+  ["src/src/info.cpp",54],
   ["src/src/sp_recon.cpp",49],
   ["src/src/equation.cpp",43],
   ["src/src/sp_flux.cpp",26],
@@ -390,8 +410,8 @@ var DIFF = [
   ["src/src/blockSolver.cpp",17],
   ["src/include/SpaceDis.hpp",14],
   ["src/include/equation.hpp",8],
+  ["zoneMain.cpp",7],
   ["CMakeLists.txt",6],
-  ["zoneMain.cpp",4],
   ["src/src/sp_difference.cpp",4],
   ["src/src/SpaceDis.cpp",2]
 ];
