@@ -106,9 +106,10 @@ void SpaceDis::difHCS()
 }
 
 /**
- * @brief MND6格式差分计算
- * 
- * 使用MND6(Modified Nonlinear Dispersion)格式进行差分计算
+ * @brief MND6 差分计算（midpoint-and-node-to-node：面心通量与节点通量混合差分）
+ *
+ * 使用MND6（面心+节点混合差分；出处：Nonomura & Fujii 2013, "Robust explicit formulation of
+ * weighted compact nonlinear scheme"）进行差分计算
  */
 void SpaceDis::difMND6()
 {

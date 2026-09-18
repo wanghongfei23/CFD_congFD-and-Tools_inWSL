@@ -380,16 +380,19 @@ constexpr real Teno5_ZCT7(std::array<real, 5> q)
     }
 }
 
+// x 的平方（替代 std::pow(x, 2)：后者在 -O3 下仍是运行时库调用）
+constexpr real pow2(real x) { return x * x; }
+
 constexpr real Teno5_Z(std::array<real, 5> q)
 {
     real eps = 1e-40;
     std::array<real, 3> beta;
-    beta[0] = 1.0/1.0 * pow(1.0 * q[0] - 2.0 * q[1] + 1.0 * q[2], 2) +
-              1.0/4.0 * pow(1.0 * q[0] - 4.0 * q[1] + 3.0 * q[2], 2);
-    beta[1] = 1.0/1.0 * pow(1.0 * q[1] - 2.0 * q[2] + 1.0 * q[3], 2) + 
-              1.0/4.0 * pow(1.0 * q[1] + 0.0 * q[2] - 1.0 * q[3], 2);
-    beta[2] = 1.0/1.0 * pow(1.0 * q[2] - 2.0 * q[3] + 1.0 * q[4], 2) + 
-              1.0/4.0 * pow(3.0 * q[2] - 4.0 * q[3] + 1.0 * q[4], 2);
+    beta[0] = 1.0/1.0 * pow2(1.0 * q[0] - 2.0 * q[1] + 1.0 * q[2]) +
+              1.0/4.0 * pow2(1.0 * q[0] - 4.0 * q[1] + 3.0 * q[2]);
+    beta[1] = 1.0/1.0 * pow2(1.0 * q[1] - 2.0 * q[2] + 1.0 * q[3]) + 
+              1.0/4.0 * pow2(1.0 * q[1] + 0.0 * q[2] - 1.0 * q[3]);
+    beta[2] = 1.0/1.0 * pow2(1.0 * q[2] - 2.0 * q[3] + 1.0 * q[4]) + 
+              1.0/4.0 * pow2(3.0 * q[2] - 4.0 * q[3] + 1.0 * q[4]);
 
     real sumbeta = 0;
     real C = 1, qq = 6, tau = std::abs(beta[2] - beta[0]);
@@ -494,12 +497,12 @@ constexpr real Teno5_CongZ(std::array<real, 5> q)
 {
     real eps = 1e-40; // 1e-10;
     std::array<real, 3> beta ;
-    beta[0] = 1.0/1.0 * pow(1.0 * q[0] - 2.0 * q[1] + 1.0 * q[2], 2) +
-              1.0/4.0 * pow(1.0 * q[0] - 4.0 * q[1] + 3.0 * q[2], 2);
-    beta[1] = 1.0/1.0 * pow(1.0 * q[1] - 2.0 * q[2] + 1.0 * q[3], 2) + 
-              1.0/4.0 * pow(1.0 * q[1] + 0.0 * q[2] - 1.0 * q[3], 2);
-    beta[2] = 1.0/1.0 * pow(1.0 * q[2] - 2.0 * q[3] + 1.0 * q[4], 2) + 
-              1.0/4.0 * pow(3.0 * q[2] - 4.0 * q[3] + 1.0 * q[4], 2);
+    beta[0] = 1.0/1.0 * pow2(1.0 * q[0] - 2.0 * q[1] + 1.0 * q[2]) +
+              1.0/4.0 * pow2(1.0 * q[0] - 4.0 * q[1] + 3.0 * q[2]);
+    beta[1] = 1.0/1.0 * pow2(1.0 * q[1] - 2.0 * q[2] + 1.0 * q[3]) + 
+              1.0/4.0 * pow2(1.0 * q[1] + 0.0 * q[2] - 1.0 * q[3]);
+    beta[2] = 1.0/1.0 * pow2(1.0 * q[2] - 2.0 * q[3] + 1.0 * q[4]) + 
+              1.0/4.0 * pow2(3.0 * q[2] - 4.0 * q[3] + 1.0 * q[4]);
 
     // int minBeta=(beta[0]>beta[1])? ((beta[2]>beta[1])? 1: 2):((beta[2]>beta[0])? 0 : 2);
     unsigned short minBeta = std::min_element(beta.begin(), beta.end()) - beta.begin();
@@ -1417,12 +1420,12 @@ constexpr real whf_TCNS_A(std::array<real, 5> q)
 {
     // 局部光滑因子β
     std::array<real, 3> beta;
-    beta[0] = 1.0/1.0 * pow(1.0 * q[0] - 2.0 * q[1] + 1.0 * q[2], 2) +
-              1.0/4.0 * pow(1.0 * q[0] - 4.0 * q[1] + 3.0 * q[2], 2);
-    beta[1] = 1.0/1.0 * pow(1.0 * q[1] - 2.0 * q[2] + 1.0 * q[3], 2) + 
-              1.0/4.0 * pow(1.0 * q[1] + 0.0 * q[2] - 1.0 * q[3], 2);
-    beta[2] = 1.0/1.0 * pow(1.0 * q[2] - 2.0 * q[3] + 1.0 * q[4], 2) + 
-              1.0/4.0 * pow(3.0 * q[2] - 4.0 * q[3] + 1.0 * q[4], 2);
+    beta[0] = 1.0/1.0 * pow2(1.0 * q[0] - 2.0 * q[1] + 1.0 * q[2]) +
+              1.0/4.0 * pow2(1.0 * q[0] - 4.0 * q[1] + 3.0 * q[2]);
+    beta[1] = 1.0/1.0 * pow2(1.0 * q[1] - 2.0 * q[2] + 1.0 * q[3]) + 
+              1.0/4.0 * pow2(1.0 * q[1] + 0.0 * q[2] - 1.0 * q[3]);
+    beta[2] = 1.0/1.0 * pow2(1.0 * q[2] - 2.0 * q[3] + 1.0 * q[4]) + 
+              1.0/4.0 * pow2(3.0 * q[2] - 4.0 * q[3] + 1.0 * q[4]);
     // 全局光滑因子τ
     real tau = std::abs(beta[2] - beta[0]);
 
@@ -3458,14 +3461,14 @@ constexpr real whf_TCNS_AS_Ff3_test(std::array<real, 5> q) {
 constexpr real whf_TCNS_AS_Ff3_5_9_time_improve(std::array<real, 5> q) {
   real eps = 1e-40; // 1e-10;
   std::array<real, 3> beta = {
-      1.0 / 1.0 * pow(1.0 * q[0] - 2.0 * q[1] + 1.0 * q[2], 2) +
-          1.0 / 4.0 * pow(1.0 * q[0] - 4.0 * q[1] + 3.0 * q[2], 2),
+      1.0 / 1.0 * pow2(1.0 * q[0] - 2.0 * q[1] + 1.0 * q[2]) +
+          1.0 / 4.0 * pow2(1.0 * q[0] - 4.0 * q[1] + 3.0 * q[2]),
 
-      1.0 / 1.0 * pow(1.0 * q[1] - 2.0 * q[2] + 1.0 * q[3], 2) +
-          1.0 / 4.0 * pow(1.0 * q[1] + 0.0 * q[2] - 1.0 * q[3], 2),
+      1.0 / 1.0 * pow2(1.0 * q[1] - 2.0 * q[2] + 1.0 * q[3]) +
+          1.0 / 4.0 * pow2(1.0 * q[1] + 0.0 * q[2] - 1.0 * q[3]),
 
-      1.0 / 1.0 * pow(1.0 * q[2] - 2.0 * q[3] + 1.0 * q[4], 2) +
-          1.0 / 4.0 * pow(3.0 * q[2] - 4.0 * q[3] + 1.0 * q[4], 2)};
+      1.0 / 1.0 * pow2(1.0 * q[2] - 2.0 * q[3] + 1.0 * q[4]) +
+          1.0 / 4.0 * pow2(3.0 * q[2] - 4.0 * q[3] + 1.0 * q[4])};
 
   // int minBeta=(beta[0]>beta[1])? ((beta[2]>beta[1])? 1:
   // 2):((beta[2]>beta[0])? 0 : 2);
@@ -3486,13 +3489,13 @@ constexpr real whf_TCNS_AS_Ff3_5_9_time_improve(std::array<real, 5> q) {
     
   // 计算η值
   real eta_im1 = (std::abs(2.0*delta_q[1]*delta_q[0]) + epsilon_A) / 
-                  (std::pow(delta_q[1], 2) + std::pow(delta_q[0], 2) + epsilon_A);
+                  (pow2(delta_q[1]) + pow2(delta_q[0]) + epsilon_A);
   
   real eta_i = (std::abs(2.0*delta_q[2]*delta_q[1]) + epsilon_A) / 
-                (std::pow(delta_q[2], 2) + std::pow(delta_q[1], 2) + epsilon_A);
+                (pow2(delta_q[2]) + pow2(delta_q[1]) + epsilon_A);
   
   real eta_ip1 = (std::abs(2.0*delta_q[3]*delta_q[2]) + epsilon_A) / 
-                  (std::pow(delta_q[3], 2) + std::pow(delta_q[2], 2) + epsilon_A);
+                  (pow2(delta_q[3]) + pow2(delta_q[2]) + epsilon_A);
   
   real eta_min = std::min({eta_im1, eta_i, eta_ip1});
 

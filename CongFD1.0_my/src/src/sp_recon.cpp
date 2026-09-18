@@ -391,11 +391,20 @@ std::vector<real> SpaceDis::recon3DFaceCenter(int i)
         }
     }
 
+    // 记录插值计算开始时间
+    auto start = std::chrono::steady_clock::now();
+
     auto Q1LL = inter5(q1L); auto Q1RR = inter5(q1R);
     auto Q2LL = inter5(q2L); auto Q2RR = inter5(q2R);
     auto Q3LL = inter5(q3L); auto Q3RR = inter5(q3R);
     auto Q4LL = inter5(q4L); auto Q4RR = inter5(q4R);
     auto Q5LL = inter5(q5L); auto Q5RR = inter5(q5R);
+
+    // 记录插值计算结束时间
+    auto stop = std::chrono::steady_clock::now();
+    // 计算插值计算耗时并累加到timep变量中
+    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
+    timep += duration;
 
     auto resTempL = eig.charToPrim({ Q1LL, Q2LL, Q3LL, Q4LL, Q5LL });
     auto resTempR = eig.charToPrim({ Q1RR, Q2RR, Q3RR, Q4RR, Q5RR });
