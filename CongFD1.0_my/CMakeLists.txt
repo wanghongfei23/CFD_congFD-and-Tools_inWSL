@@ -74,6 +74,18 @@ add_executable(fixedDtWaveTest fixedDtWaveTest.cpp)
 # 为fixedDtWaveTest目标链接相同的库
 target_link_libraries(fixedDtWaveTest PUBLIC libcongFD OpenMP::OpenMP_CXX)
 
+# 粘性模块内核测试（任务 4：物性/CD6/通量与散度）
+add_executable(viscousKernelTest viscousKernelTest.cpp)
+
+# 为viscousKernelTest目标链接相同的库
+target_link_libraries(viscousKernelTest PUBLIC libcongFD OpenMP::OpenMP_CXX)
+
+# 粘性 MMS 阶数测定（任务 4 S9：整求解器驱动）
+add_executable(viscousOrderTest viscousOrderTest.cpp)
+
+# 为viscousOrderTest目标链接相同的库
+target_link_libraries(viscousOrderTest PUBLIC libcongFD OpenMP::OpenMP_CXX)
+
 # 添加src和utils子目录，CMake会处理这些子目录中的CMakeLists.txt文件[1](@ref)
 # 通常这些子目录中定义了libcongFD库的构建规则
 add_subdirectory(src)

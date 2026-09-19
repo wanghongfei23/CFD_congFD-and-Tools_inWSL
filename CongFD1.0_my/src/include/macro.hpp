@@ -153,7 +153,8 @@ enum TimeMethod {
  */
 enum SourceType {
     SOURCENULL,                 ///< 无源项
-    GRAVITY                     ///< 重力源项
+    GRAVITY,                    ///< 重力源项
+    VISCOUSMMS                  ///< 粘性 MMS 造解源项（任务 4；测试用，见 04 实施分解 S9）
 };
 
 /**

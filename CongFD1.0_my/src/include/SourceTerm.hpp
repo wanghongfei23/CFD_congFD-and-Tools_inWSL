@@ -13,6 +13,7 @@ class SourceTerm
     private:
     friend class Initializer;
     void calGravitySource();
+    void calViscousMMS();
     void nothingHappened();
     void (SourceTerm::*calSourceMethod)()=nullptr;
     Data *rhs;
