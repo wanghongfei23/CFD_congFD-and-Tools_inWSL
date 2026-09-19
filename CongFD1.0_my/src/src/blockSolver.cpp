@@ -50,6 +50,7 @@ BlockSolver::BlockSolver()
    initer->initBnds(bnds,eqn,block->getICMax(),block);
    initer->initSpDistributor(spDis,eqn,block,bnds);
    sourceTerm=new SourceTerm(eqn->getPrim(),eqn->getRhs(),info);
+   viscousTerm=new ViscousTerm(eqn->getPrim(),eqn->getRhs(),info);
 
    cons=eqn->getCons();
    rhs=eqn->getRhs();
@@ -77,6 +78,7 @@ BlockSolver::BlockSolver(Info* info_)
     initer->initBnds(bnds,eqn,block->getICMax(),block);
     initer->initSpDistributor(spDis,eqn,block,bnds);
     sourceTerm=new SourceTerm(eqn->getPrim(),eqn->getRhs(),info);
+    viscousTerm=new ViscousTerm(eqn->getPrim(),eqn->getRhs(),info);
 
     cons=eqn->getCons();
     rhs=eqn->getRhs();
@@ -109,6 +111,8 @@ void BlockSolver::RK3_SSP(real dt)
     bnds->update();
     // 计算空间离散项，即对流项的数值导数，贡献到右端项中
     spDis->rhsSolve();
+    // 计算粘性项（黏性应力＋热传导的散度）并累加进 rhs（任务 4；与源项并列）
+    viscousTerm->calViscous();
     // 计算物理源项（如体积力、化学反应等）并将其贡献添加到右端项中
     sourceTerm->calSource();
     // cgnsIO.BlockCgnsOutput(block,info);
@@ -129,6 +133,8 @@ void BlockSolver::RK3_SSP(real dt)
     bnds->update();
     // 计算空间离散项，得到对流项的数值导数贡献
     spDis->rhsSolve();
+    // 计算粘性项并累加（任务 4）
+    viscousTerm->calViscous();
     // 计算源项（如体积力、能量源等）并添加到右端项中
     sourceTerm->calSource();
     #pragma omp parallel for
@@ -143,6 +149,7 @@ void BlockSolver::RK3_SSP(real dt)
     eqn->consToPrim();
     bnds->update();
     spDis->rhsSolve();
+    viscousTerm->calViscous();   // 任务 4：粘性项累加
     sourceTerm->calSource();
     #pragma omp parallel for
     for(int i=0;i<n;i++)
@@ -233,6 +240,7 @@ BlockSolver::~BlockSolver()
     delete bnds;
     delete spDis;
     delete sourceTerm;
+    delete viscousTerm;
 }
 
 /**
@@ -319,7 +327,8 @@ void BlockSolver::stepsLoopCFL()
             if(info->dim==3) appendDiagnostics(info, eqn->getPrim(), block);  // 三维：追加 K/Ω 诊断行（任务 7）
         }
 
-        auto dt=getTimeIntervalExplicit();                                    // 根据CFL条件自动计算时间步长
+        auto dt = info->viscous ? getTimeIntervalExplicitViscous()
+                                : getTimeIntervalExplicit();                  // 两套 dt 路线：粘性档增黏性谱半径项（方案 §4.3）
         // dt=info->dt;
         
         // 如果下一个时间步会超过输出间隔，则调整时间步长以精确匹配输出时刻
@@ -524,4 +533,39 @@ real BlockSolver::getTimeIntervalExplicit()
     { std::cout<<"Block Solver error: CFL Loop with not EULER solver\n"; lambda=1;}
     dt=info->CFL/lambda;
     return dt;
+}
+
+/**
+ * @brief 获取粘性档显式时间间隔（对流＋黏性谱半径之和）
+ *
+ * 两套 dt 路线（飞哥已定，开发方案 §4.3）：无粘档沿用 getTimeIntervalExplicit（原样）；
+ * 粘性档用本函数：λ_d＝对流谱半径＋max(4/3, γ/Pr)·(μ/ρ)/Δx_d²，逐向求和后 dt=CFL/λ。
+ */
+real BlockSolver::getTimeIntervalExplicitViscous()
+{
+    real lambda=0;
+    int dim=info->dim;
+    Data* prim = eqn->getPrim();
+    int n = prim->getN();
+    eqn->consToPrim();
+    real mu=1.0/info->Re;
+    real coef=std::max(4.0/3.0, GAMMA/info->Pr);
+    std::vector<real> lambdas(dim);
+    for(int idim=0;idim<dim;idim++)
+    {
+        real maxLambda=0;
+        #pragma omp parallel for reduction(max:maxLambda)
+        for(int i=0;i<n;i++)
+        {
+            real iLambda;
+            auto dhs=block->getCellInterval(i);
+            real dh=info->constH?info->geth(idim):dhs.at(idim);
+            iLambda=(std::sqrt(GAMMA*(*prim)(i,dim+1)/(*prim)(i,0))+std::abs((*prim)(i,idim+1)))/dh
+                    + coef*(mu/(*prim)(i,0))/(dh*dh);
+            maxLambda=std::max(maxLambda,iLambda);
+        }
+        lambdas[idim]=maxLambda;
+    }
+    for(auto iLambda:lambdas) lambda+=iLambda;
+    return info->CFL/lambda;
 }

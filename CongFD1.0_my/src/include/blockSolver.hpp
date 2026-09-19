@@ -2,6 +2,7 @@
 #include "initializer.hpp"
 #include "cgnsio.hpp"
 #include "SourceTerm.hpp"
+#include "ViscousTerm.hpp"
 
 /**
  * @brief 区块求解器类
@@ -72,6 +73,16 @@ class BlockSolver
      */
     void Test();
 
+    /**
+     * @brief 取守恒变量数据指针（测试驱动用；只读访问，无行为影响）
+     */
+    Data* getConsPtr(){ return cons; }
+
+    /**
+     * @brief 取原始变量数据指针（测试驱动用；只读访问，无行为影响）
+     */
+    Data* getPrimPtr(){ return eqn->getPrim(); }
+
     private:
     
     CgnsIO cgnsIO;              ///< CGNS输入输出处理对象
@@ -83,6 +94,7 @@ class BlockSolver
     SpDistributor* spDis;       ///< 空间分布器对象指针
     Data* cons,*rhs;            ///< 守恒变量和右端项数据指针
     SourceTerm* sourceTerm;     ///< 源项对象指针
+    ViscousTerm* viscousTerm;   ///< 粘性项对象指针（任务 4）
     
     /**
      * @brief 三阶SSP Runge-Kutta时间积分方法
@@ -113,6 +125,12 @@ class BlockSolver
      * @return 时间间隔值
      */
     real getTimeIntervalExplicit();
+
+    /**
+     * @brief 获取粘性档显式时间间隔（对流＋黏性谱半径；不动无粘路线，开发方案 §4.3）
+     * @return 时间间隔值
+     */
+    real getTimeIntervalExplicitViscous();
     
     TimeMethod timeMethod=RK3SSP;  ///< 时间积分方法，默认为三阶SSP Runge-Kutta方法
 };

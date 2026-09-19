@@ -423,7 +423,14 @@ int main()
         file >> n;                                    // 16. 设置OpenMP线程数
         omp_set_num_threads(n);
 
+        // 17 至 19：粘性扩展可选项（缺省粘性关；旧 16 项配置零改动，开发方案 §4.4）
+        int nvis=0; real Re0=1600.0, Pr0=0.72;
+        if (file >> nvis) info->viscous = (nvis!=0);  // 17. 粘性开关（可选）
+        if (file >> Re0)  info->Re  = Re0;            // 18. 雷诺数（可选）
+        if (file >> Pr0)  info->Pr  = Pr0;            // 19. 普朗特数（可选）
+
         std::cout << "file mode initialization finished（文件模式初始化完成）\n";
+        std::cout << "viscous=" << info->viscous << " Re=" << info->Re << " Pr=" << info->Pr << "\n";
 
     } else {
         // 文件打开失败提示

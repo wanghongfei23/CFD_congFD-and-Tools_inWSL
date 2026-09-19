@@ -33,6 +33,11 @@ class Info
     real CFL=0.5;                                  ///< CFL数
     bool fixedtimeSteps=true;                      ///< 是否使用固定时间步长
 
+    //粘性扩展（任务 4；info.txt 第 17 至 19 项，缺省粘性关，旧配置零改动）
+    bool viscous=false;                            ///< 粘性开关（常粘 μ=1/Re）
+    real Re=1600;                                  ///< 雷诺数（本档 1600 → μ=6.25e-4）
+    real Pr=0.72;                                  ///< 普朗特数（κ=μc_p/Pr；c_p=γ/(γ−1)）
+
     //对于隐式求解器
     real implicitCFL=0.01;                         ///< 隐式求解器CFL数
     real maxImplicitStep=100;                      ///< 最大隐式步数
