@@ -4,7 +4,7 @@
  *        排除"CFL 固定（dt∝h）导致时间误差掺入"的可能，验证空间收敛阶。
  *
  * 用法: ./fixedDtWaveTest <iMax> [步数=4000] [dt=5e-4]
- * 输出: 当前目录下 3D_wave 的 CGNS（t = 步数×dt），由 tools/wave_error.py 对比。
+ * 输出: 当前目录下 3D_wave 的 CGNS（t = 步数×dt），对照脚本 wave_error.py（2026-09-20 随数据迁至 Zotero 算例档案核验底稿/）。
  */
 #include "blockSolver.hpp"
 #include <iostream>
@@ -18,7 +18,7 @@ int main(int argc, char** argv)
 
     Info* i3 = new Info;
     i3->dim    = 3;
-    i3->nCase  = 3;                                  // 熵波（与 runs/wav2_* 同初值）
+    i3->nCase  = 3;                                  // 熵波（与核验数据 wav2_* 同初值）
     i3->calZone = { 0, 2*pi, 0, 2*pi, 0, 2*pi };
     i3->iMax   = { iMax, iMax, iMax };
     i3->interMethod = (InterMethod)31;
