@@ -429,6 +429,11 @@ int main()
         if (file >> Re0)  info->Re  = Re0;            // 18. 雷诺数（可选）
         if (file >> Pr0)  info->Pr  = Pr0;            // 19. 普朗特数（可选）
 
+        // 20 至 21：幂律粘性可选项（缺省常粘；HIT 开发见 case_for_comment8/HIT）
+        real plE=0.0, Tref0=1.0;
+        if (file >> plE)   info->powerLawExp = plE;   // 20. 幂律指数（≤0 或缺失 → 常粘）
+        if (file >> Tref0) info->Tref = Tref0;        // 21. 幂律参考温度（可选）
+
         std::cout << "file mode initialization finished（文件模式初始化完成）\n";
         std::cout << "viscous=" << info->viscous << " Re=" << info->Re << " Pr=" << info->Pr << "\n";
 

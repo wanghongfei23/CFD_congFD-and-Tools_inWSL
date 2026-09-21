@@ -23,9 +23,11 @@ ViscousTerm::ViscousTerm(Data* prim_,Data* rhs_,Info* info_)
     hy=(info->calZone[3]-info->calZone[2])/(info->iMax[1]-1);
     hz=(info->calZone[5]-info->calZone[4])/(info->iMax[2]-1);
 
-    mu=1.0/info->Re;                               // 常粘：μ=1/Re（ρ0=U0=L0=1）
+    mu=1.0/info->Re;                               // 基准粘性：μ=1/Re（ρ0=U0=L0=1）
     cp=GAMMA/(GAMMA-1.0);                          // R=1 约定：c_p=γ/(γ−1)=3.5
     kappa=mu*cp/info->Pr;                          // κ=μc_p/Pr
+    plExp=info->powerLawExp;                       // 幂律指数（≤0 → 常粘，路径与原完全一致）
+    Tref=(info->Tref>0.0)? info->Tref : 1.0;       // 幂律参考温度（非正值回退 1.0）
 
     if(info->viscous)
     {
@@ -75,12 +77,20 @@ void ViscousTerm::calViscous3D()
             real vx=gv[0*(size_t)n+idx], vy=gv[1*(size_t)n+idx], vz=gv[2*(size_t)n+idx];
             real wx=gw[0*(size_t)n+idx], wy=gw[1*(size_t)n+idx], wz=gw[2*(size_t)n+idx];
             real div=ux+vy+wz;
-            real s11=mu*(2.0*ux-(2.0/3.0)*div);    // τ_xx（含 2/3 Stokes）
-            real s22=mu*(2.0*vy-(2.0/3.0)*div);    // τ_yy
-            real s33=mu*(2.0*wz-(2.0/3.0)*div);    // τ_zz
-            real s12=mu*(uy+vx);                   // τ_xy
-            real s13=mu*(uz+wx);                   // τ_xz
-            real s23=mu*(vz+wy);                   // τ_yz
+            real muP=mu, kapP=kappa;               // 物性：常粘缺省
+            if(plExp>0.0)                          // 幂律：按当地温度 T=p/ρ 取物性
+            {
+                const real Tc=(*prim)(idx,4)/(*prim)(idx,0);
+                const real fac=std::pow(Tc/Tref,plExp);
+                muP=mu*fac;
+                kapP=kappa*fac;
+            }
+            real s11=muP*(2.0*ux-(2.0/3.0)*div);   // τ_xx（含 2/3 Stokes）
+            real s22=muP*(2.0*vy-(2.0/3.0)*div);   // τ_yy
+            real s33=muP*(2.0*wz-(2.0/3.0)*div);   // τ_zz
+            real s12=muP*(uy+vx);                  // τ_xy
+            real s13=muP*(uz+wx);                  // τ_xz
+            real s23=muP*(vz+wy);                  // τ_yz
             real td=gT[d*(size_t)n+idx];
             real s_d0,s_d1,s_d2;
             if(d==0)      { s_d0=s11; s_d1=s12; s_d2=s13; }
@@ -90,7 +100,7 @@ void ViscousTerm::calViscous3D()
             Ev[1*(size_t)n+idx]=s_d0;
             Ev[2*(size_t)n+idx]=s_d1;
             Ev[3*(size_t)n+idx]=s_d2;
-            Ev[4*(size_t)n+idx]=u*s_d0+v*s_d1+w*s_d2+kappa*td;   // u·τ + κ∂_dT
+            Ev[4*(size_t)n+idx]=u*s_d0+v*s_d1+w*s_d2+kapP*td;    // u·τ + κ∂_dT
         }
 
         #pragma omp parallel for

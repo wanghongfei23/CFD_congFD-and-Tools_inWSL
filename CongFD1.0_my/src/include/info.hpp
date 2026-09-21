@@ -38,6 +38,10 @@ class Info
     real Re=1600;                                  ///< 雷诺数（本档 1600 → μ=6.25e-4）
     real Pr=0.72;                                  ///< 普朗特数（κ=μc_p/Pr；c_p=γ/(γ−1)）
 
+    //幂律粘性扩展（info.txt 第 20 至 21 项，缺省常粘，旧配置零改动；HIT 开发）
+    real powerLawExp=0.0;                          ///< 幂律指数（μ=μref·(T/Tref)^n；≤0=常粘）
+    real Tref=1.0;                                 ///< 幂律参考温度 T_ref（幂律开时有效）
+
     //对于隐式求解器
     real implicitCFL=0.01;                         ///< 隐式求解器CFL数
     real maxImplicitStep=100;                      ///< 最大隐式步数

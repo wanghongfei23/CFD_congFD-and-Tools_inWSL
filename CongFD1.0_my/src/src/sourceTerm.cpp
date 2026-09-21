@@ -77,7 +77,7 @@ void SourceTerm::calViscousMMS()
             if(d==1) Y=std::complex<real>(y,eps);
             if(d==2) Z=std::complex<real>(z,eps);
             std::complex<real> Fi[5],Fv[5];
-            mms::fluxDiff< std::complex<real> >(d,X,Y,Z,std::complex<real>(t,0.0),Fi,Fv,mu,kappa);
+            mms::fluxDiff< std::complex<real> >(d,X,Y,Z,std::complex<real>(t,0.0),Fi,Fv,mu,kappa,info->powerLawExp,info->Tref);
             for(int c=0;c<5;c++) S[c]+=std::imag(Fi[c]-Fv[c])/eps;
         }
         {

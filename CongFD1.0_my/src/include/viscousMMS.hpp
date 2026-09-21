@@ -57,8 +57,9 @@ inline void state(T x,T y,T z,T t,T q[5],T dq[3][5],T dt[5])
 }
 
 // d 方向的欧拉通量 Fi 与粘性通量 Fv（组装与 viscousTerm.cpp 同一套公式与符号约定）
+// plExp>0 时物性按幂律 mu·(T/Tref)^plExp 逐点修正（κ 随动；分支仅依赖实参数，复步安全）
 template<class T>
-inline void fluxDiff(int d,T x,T y,T z,T t,T Fi[5],T Fv[5],real mu,real kappa)
+inline void fluxDiff(int d,T x,T y,T z,T t,T Fi[5],T Fv[5],real mu,real kappa,real plExp=0.0,real Tref=1.0)
 {
     T q[5],dq[3][5],dtv[5];
     state(x,y,z,t,q,dq,dtv);
@@ -78,18 +79,21 @@ inline void fluxDiff(int d,T x,T y,T z,T t,T Fi[5],T Fv[5],real mu,real kappa)
     Fi[4]=(E+p)*un;
 
     T div=dq[0][1]+dq[1][2]+dq[2][3];
-    T s11=mu*(2.0*dq[0][1]-(2.0/3.0)*div);
-    T s22=mu*(2.0*dq[1][2]-(2.0/3.0)*div);
-    T s33=mu*(2.0*dq[2][3]-(2.0/3.0)*div);
-    T s12=mu*(dq[1][1]+dq[0][2]);
-    T s13=mu*(dq[2][1]+dq[0][3]);
-    T s23=mu*(dq[2][2]+dq[1][3]);
+    T fac=(plExp>0.0)? std::pow(Tt/Tref,plExp) : T(1.0);
+    T muE=mu*fac;
+    T kapE=kappa*fac;
+    T s11=muE*(2.0*dq[0][1]-(2.0/3.0)*div);
+    T s22=muE*(2.0*dq[1][2]-(2.0/3.0)*div);
+    T s33=muE*(2.0*dq[2][3]-(2.0/3.0)*div);
+    T s12=muE*(dq[1][1]+dq[0][2]);
+    T s13=muE*(dq[2][1]+dq[0][3]);
+    T s23=muE*(dq[2][2]+dq[1][3]);
     T sd0,sd1,sd2,Td;
     if(d==0)      { sd0=s11; sd1=s12; sd2=s13; Td=Tx; }
     else if(d==1) { sd0=s12; sd1=s22; sd2=s23; Td=Ty; }
     else          { sd0=s13; sd1=s23; sd2=s33; Td=Tz; }
     Fv[0]=T(0.0);
     Fv[1]=sd0; Fv[2]=sd1; Fv[3]=sd2;
-    Fv[4]=u*sd0+v*sd1+w*sd2+kappa*Td;
+    Fv[4]=u*sd0+v*sd1+w*sd2+kapE*Td;
 }
 }

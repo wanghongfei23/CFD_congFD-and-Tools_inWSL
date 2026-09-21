@@ -95,8 +95,8 @@ int main()
             real p=100.0+(std::cos(2*x)+std::cos(2*y))*(2.0+std::cos(2*z))/16.0-2.0/16.0;
             prim(id,0)=1.0; prim(id,1)=u; prim(id,2)=v; prim(id,3)=0.0; prim(id,4)=p;
         }
-        real K,Omega;
-        calcDiagnostics(&prim,{N,N,N},h,K,Omega);
+        real K,Omega,U2,Tvar,Thvar;
+        calcDiagnostics(&prim,{N,N,N},h,K,Omega,U2,Tvar,Thvar);
         check(std::abs(K-M_PI*M_PI*M_PI)/(M_PI*M_PI*M_PI)<1e-10, "K(0)==pi^3");
         check(std::abs(Omega-3.0*M_PI*M_PI*M_PI)/(3.0*M_PI*M_PI*M_PI)<1e-4, "Omega(0)==3*pi^3");
     }

@@ -6,6 +6,7 @@
  * 组 2：CD6 对五次多项式精确（机器精度）
  * 组 3：CD6 梯度场 sin 收敛 6 阶（整场含周期回绕，16/32/64）
  * 组 4：粘性 rhs 解析锚点（单向 u=sin x：动量与能量分量逐点对照）
+ * 组 4b：幂律粘性解析锚点（均匀温度场，因子=1 与 2^0.75；HIT 开发新增）
  * 组 5：均匀场 → 粘性贡献为零
  * （组 6 至 8：平面波族衰减阶数，S8 追加）
  */
@@ -156,6 +157,43 @@ int main()
         }
         std::printf("   组4 误差 动量=%.3e 能量=%.3e 其余=%.3e\n",em,ee,eo);
         check(em<1e-9 && ee<1e-9 && eo<1e-14,"组4 粘性 rhs 解析锚点（单向 u=sin x）");
+    }
+
+    // ---- 组 4b：幂律粘性解析锚点（均匀温度场；HIT 开发新增） ----
+    // T=100=Tref → 因子 1；T=200 → 因子 2^0.75。物性均匀，右端项应精确等于常数因子放大的组 4 解析值。
+    {
+        int N=64; real h=2*PI/N;
+        const real coefBase=(1.0/1600.0)*4.0/3.0;
+        const real ps[2]={100.0,200.0};
+        const real facs[2]={1.0,std::pow(2.0,0.75)};
+        for(int c=0;c<2;c++)
+        {
+            Info info; setupInfo(info,N);
+            info.powerLawExp=0.75; info.Tref=100.0;
+            Data prim(N*N*N,5), rhs(N*N*N,5);
+            rhs.setZeros();
+            real p0=ps[c];
+            fillField(prim,N,h,[&](real x,real y,real z,real&r,real&u,real&v,real&w,real&p)
+                     { r=1; u=std::sin(x); v=0; w=0; p=p0; });
+            ViscousTerm vt(&prim,&rhs,&info);
+            vt.calViscous();
+            real coef=coefBase*facs[c];
+            real e=0;
+            for(int k=0;k<N;k++)
+            for(int j=0;j<N;j++)
+            for(int i=0;i<N;i++)
+            {
+                int idx=i+j*N+k*N*N;
+                real x=(i+0.5)*h;
+                real want_m=coef*std::sin(x);              // rhs_u = μ·fac·(4/3)·sin x
+                real want_e=-coef*std::cos(2.0*x);         // rhs_E = −μ·fac·(4/3)·cos 2x
+                e=std::max(e,std::abs(rhs(idx,1)-want_m));
+                e=std::max(e,std::abs(rhs(idx,4)-want_e));
+            }
+            char nm[128];
+            std::snprintf(nm,sizeof(nm),"组4b 幂律粘性解析锚点（T=%g，因子=%.4f）",(double)p0,(double)facs[c]);
+            check(e<1e-9,nm);
+        }
     }
 
     // ---- 组 5：均匀场 → 粘性贡献为零 ----
@@ -377,8 +415,8 @@ int main()
                  { r=1; u=std::sin(x)*std::cos(y)*std::cos(z);
                    v=-std::cos(x)*std::sin(y)*std::cos(z); w=0;
                    p=100.0+((std::cos(2*x)+std::cos(2*y))*(2.0+std::cos(2*z))-2.0)/16.0; });
-        real K0,Om0;
-        calcDiagnostics(&prim,{N,N,N},h,K0,Om0);
+        real K0,Om0,U2d,Tvard,Thvard;
+        calcDiagnostics(&prim,{N,N,N},h,K0,Om0,U2d,Tvard,Thvard);
         ViscousTerm vt(&prim,&rhs,&info);
         vt.calViscous();
         real sum=0;

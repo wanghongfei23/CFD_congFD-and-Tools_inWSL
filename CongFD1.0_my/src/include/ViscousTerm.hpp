@@ -88,6 +88,7 @@ class ViscousTerm
     int n,nPrim,nCons;
     std::array<int,3> icM;
     real hx,hy,hz;                     // 逐向网格间距（各向异性均匀网格；同向均匀）
-    real mu,kappa,cp;                  // 常粘物性与比热（R=1 约定）
+    real mu,kappa,cp;                  // 基准物性与比热（R=1 约定；mu=1/Re）
+    real plExp=0.0,Tref=1.0;           // 幂律粘性（μ=mu·(T/Tref)^plExp，κ 随动；plExp≤0 常粘）
     std::vector<real> gu,gv,gw,gT;     // 12 个梯度场（[d*n+idx]）
 };

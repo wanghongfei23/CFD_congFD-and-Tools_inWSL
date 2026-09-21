@@ -10,16 +10,17 @@
 #include <filesystem>
 
 /**
- * @brief 追加一行诊断输出（时间、K、Ω）到当前目录 diagnostics.txt（任务 7 新增；仅三维调用）
+ * @brief 追加一行诊断输出（时间与 K/Ω/U2/Tvar/Thvar 五列）到当前目录 diagnostics.txt（仅三维调用）
  */
 static void appendDiagnostics(Info* info, Data* prim, Block* block)
 {
-    real K,Omega;
-    calcDiagnostics(prim, block->getICMax(), info->interval, K, Omega);
+    real K,Omega,U2,Tvar,Thvar;
+    calcDiagnostics(prim, block->getICMax(), info->interval, K, Omega, U2, Tvar, Thvar);
     bool fresh=!std::filesystem::exists("diagnostics.txt");
     std::ofstream diag("diagnostics.txt", std::ios::app);
-    if(fresh) diag << "# t K Omega\n";
-    diag << std::scientific << std::setprecision(16) << info->t << " " << K << " " << Omega << "\n";
+    if(fresh) diag << "# t K Omega U2 Tvar Thvar\n";
+    diag << std::scientific << std::setprecision(16) << info->t << " " << K << " " << Omega
+         << " " << U2 << " " << Tvar << " " << Thvar << "\n";
 }
 
 /**

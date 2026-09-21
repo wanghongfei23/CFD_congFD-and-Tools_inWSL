@@ -253,7 +253,8 @@ static std::map<int,std::string> exampleStr3D={
     {1,"3D_uniform"},   // 均匀场（三维核验用）
     {2,"3D_vortex"},    // 三维等熵涡对流（解析解基准）
     {3,"3D_wave"},      // 三维熵波（解析解基准，边界敏感检验）
-    {4,"3D_TGV2D"}      // 2D TGV 的 z 均匀嵌入（任务 8.6 code-to-code 对照）
+    {4,"3D_TGV2D"},     // 2D TGV 的 z 均匀嵌入（任务 8.6 code-to-code 对照）
+    {5,"3D_HIT"}        // 可压缩均匀各向同性湍流衰减（HIT；开发方案见 case_for_comment8/HIT）
 };
 
 /**

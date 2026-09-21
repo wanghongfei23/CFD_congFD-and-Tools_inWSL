@@ -4,6 +4,262 @@
  */
 
 #include"initializer.hpp"
+#include <random>
+#include <cstdio>
+
+// =====================================================================
+// HIT 初值谱合成（Johnsen et al. 2010 附录 A 式 (19)-(21)）
+// 口径与方案见 case_for_comment8/HIT/（HIT-算例定义.md §3.1、HIT-实施方案.md §3）。
+// 说明：极简复数与基-2 FFT 自含于此（不复用 std::complex：macro.hpp 的
+// real 宏会破坏其成员名）；生成串行且逐模式确定，结果与线程数无关。
+// =====================================================================
+namespace
+{
+struct Cpx { real re; real im; };
+inline Cpx cpxAdd(Cpx a,Cpx b){ return Cpx{a.re+b.re,a.im+b.im}; }
+inline Cpx cpxSub(Cpx a,Cpx b){ return Cpx{a.re-b.re,a.im-b.im}; }
+inline Cpx cpxMul(Cpx a,Cpx b){ return Cpx{a.re*b.re-a.im*b.im,a.re*b.im+a.im*b.re}; }
+
+// 一维基-2 FFT（原位）；inv=false 正变换 e^{-i2πjk/n}，inv=true 逆变换 e^{+i2πjk/n}；均不归一
+inline void fft1d(std::vector<Cpx>& a,bool inv)
+{
+    const int n=(int)a.size();
+    for(int i=1,j=0;i<n;i++)
+    {
+        int bit=n>>1;
+        for(;j&bit;bit>>=1) j^=bit;
+        j^=bit;
+        if(i<j){ Cpx t=a[i]; a[i]=a[j]; a[j]=t; }
+    }
+    const real PI=3.14159265358979323846;
+    for(int len=2;len<=n;len<<=1)
+    {
+        const real ang=(inv? 2.0:-2.0)*PI/(real)len;
+        const real wr=std::cos(ang), wi=std::sin(ang);
+        for(int s=0;s<n;s+=len)
+        {
+            real cr=1.0, ci=0.0;
+            for(int j=0;j<len/2;j++)
+            {
+                const Cpx u=a[s+j];
+                const Cpx v=cpxMul(Cpx{cr,ci},a[s+j+len/2]);
+                a[s+j]=cpxAdd(u,v);
+                a[s+j+len/2]=cpxSub(u,v);
+                const real ncr=cr*wr-ci*wi, nci=cr*wi+ci*wr;
+                cr=ncr; ci=nci;
+            }
+        }
+    }
+}
+
+// 三维变换（逐向一维 FFT；数组按 idx=i+j*nx+k*nx*ny 存储）
+inline void fft3dRun(std::vector<Cpx>& f,int nx,int ny,int nz,bool inv)
+{
+    std::vector<Cpx> line;
+    line.resize(nx);
+    for(int k=0;k<nz;k++)
+    for(int j=0;j<ny;j++)
+    {
+        const size_t base=(size_t)j*nx+(size_t)k*nx*ny;
+        for(int i=0;i<nx;i++) line[i]=f[base+i];
+        fft1d(line,inv);
+        for(int i=0;i<nx;i++) f[base+i]=line[i];
+    }
+    line.resize(ny);
+    for(int k=0;k<nz;k++)
+    for(int i=0;i<nx;i++)
+    {
+        const size_t base=(size_t)i+(size_t)k*nx*ny;
+        for(int j=0;j<ny;j++) line[j]=f[base+(size_t)j*nx];
+        fft1d(line,inv);
+        for(int j=0;j<ny;j++) f[base+(size_t)j*nx]=line[j];
+    }
+    line.resize(nz);
+    for(int j=0;j<ny;j++)
+    for(int i=0;i<nx;i++)
+    {
+        const size_t base=(size_t)i+(size_t)j*nx;
+        for(int k=0;k<nz;k++) line[k]=f[base+(size_t)k*nx*ny];
+        fft1d(line,inv);
+        for(int k=0;k<nz;k++) f[base+(size_t)k*nx*ny]=line[k];
+    }
+}
+
+// HIT 初值：随机螺线管速度场谱合成；返回前打印自检（无散、厄米、往返、归一、壳层谱）
+//   幅度：每模式 |û(k)|²=2E(k)/(4πk²)，E(k)=16√(2/π)·k⁴/k₀⁵·exp(−2k²/k₀²)
+//   相位：φ1,φ2,φ3~U[0,2π)，每波数三元组重抽；固定种子（64 位原始位映射，确定性）
+//   实场：半空间抽样＋厄米对称；Nyquist 面（|k_i|=N/2，振幅 ~e-128）与 (0,0,0) 置零
+//   归一：逆变换后按离散场实测 u_rms 全局归一至目标值
+inline void hitInitialVelocity(std::vector<real>& u,std::vector<real>& v,std::vector<real>& w,
+                               int nx,int ny,int nz,real k0,real urms,unsigned long long seed)
+{
+    const size_t n=(size_t)nx*ny*nz;
+    const real PI=3.14159265358979323846;
+
+    auto isPow2=[](int m){ return m>0 && ((m&(m-1))==0); };
+    if(!isPow2(nx)||!isPow2(ny)||!isPow2(nz))
+    {
+        std::printf("[HIT-IC] error: grid must be powers of two, got %d,%d,%d\n",nx,ny,nz);
+        return;
+    }
+
+    std::vector<Cpx> uh[3];
+    for(int c=0;c<3;c++) uh[c].assign(n,Cpx{0.0,0.0});
+
+    std::mt19937_64 rng(seed);
+    auto uni01=[&rng](){ return (real)(rng()>>11)*0x1.0p-53; };            // [0,1)
+    auto Ek=[&](real kk){ const real k2=kk*kk; return 16.0*std::sqrt(2.0/PI)*k2*k2/(k0*k0*k0*k0*k0)*std::exp(-2.0*k2/(k0*k0)); };
+    auto kidx=[](int i,int m){ return (i<=m/2)? i : i-m; };                // 0..m−1 → −m/2..m/2−1
+
+    for(int kz=0;kz<nz;kz++)
+    {
+        const int KZ=kidx(kz,nz);
+        if(KZ==nz/2||KZ==-nz/2) continue;
+        for(int ky=0;ky<ny;ky++)
+        {
+            const int KY=kidx(ky,ny);
+            if(KY==ny/2||KY==-ny/2) continue;
+            for(int kx=0;kx<nx;kx++)
+            {
+                const int KX=kidx(kx,nx);
+                if(KX==nx/2||KX==-nx/2) continue;
+                if(KX==0&&KY==0&&KZ==0) continue;
+                if(!(KZ>0||(KZ==0&&KY>0)||(KZ==0&&KY==0&&KX>0))) continue; // 半空间
+
+                const real k2=(real)KX*KX+(real)KY*KY+(real)KZ*KZ;
+                const real kk=std::sqrt(k2);
+                const real k12=std::sqrt((real)KX*KX+(real)KY*KY);
+                const real r=std::sqrt(2.0*Ek(kk)/(4.0*PI*k2));            // 幅度 √(2E/(4πk²))
+
+                const real ph1=2.0*PI*uni01(), ph2=2.0*PI*uni01(), ph3=2.0*PI*uni01();
+                const real ca=r*std::cos(ph3), sb=r*std::sin(ph3);         // a=r e^{iφ1}cosφ3，b=r e^{iφ2}sinφ3
+                const real ar=ca*std::cos(ph1), ai=ca*std::sin(ph1);
+                const real br=sb*std::cos(ph2), bi=sb*std::sin(ph2);
+
+                real P1x,P1y,P2x,P2y,P2z;
+                if(k12>0.0)
+                {
+                    P1x=(real)KY/k12; P1y=-(real)KX/k12;
+                    P2x=(real)KX*(real)KZ/(k12*kk); P2y=(real)KY*(real)KZ/(k12*kk); P2z=-k12/kk;
+                }
+                else
+                {
+                    P1x=1.0; P1y=0.0;                                      // k₁₂=0 约定（Johnsen 附录 A）
+                    P2x=0.0; P2y=(real)KZ/kk; P2z=0.0;
+                }
+                const size_t idx=(size_t)kx+(size_t)ky*nx+(size_t)kz*nx*ny;
+                uh[0][idx]=Cpx{ar*P1x+br*P2x,ai*P1x+bi*P2x};               // û = a·P1 + b·P2
+                uh[1][idx]=Cpx{ar*P1y+br*P2y,ai*P1y+bi*P2y};
+                uh[2][idx]=Cpx{br*P2z,          bi*P2z};
+
+                const int mx=(nx-kx)%nx, my=(ny-ky)%ny, mz=(nz-kz)%nz;     // 厄米对称
+                const size_t mi=(size_t)mx+(size_t)my*nx+(size_t)mz*nx*ny;
+                uh[0][mi]=Cpx{uh[0][idx].re,-uh[0][idx].im};
+                uh[1][mi]=Cpx{uh[1][idx].re,-uh[1][idx].im};
+                uh[2][mi]=Cpx{uh[2][idx].re,-uh[2][idx].im};
+            }
+        }
+    }
+
+    // 无散自检（k·û=0，构造保证）
+    real kdot=0.0,knorm=0.0;
+    for(int kz=0;kz<nz;kz++)
+    for(int ky=0;ky<ny;ky++)
+    for(int kx=0;kx<nx;kx++)
+    {
+        const size_t idx=(size_t)kx+(size_t)ky*nx+(size_t)kz*nx*ny;
+        const real KX=(real)kidx(kx,nx), KY=(real)kidx(ky,ny), KZ=(real)kidx(kz,nz);
+        const Cpx U1=uh[0][idx],U2=uh[1][idx],U3=uh[2][idx];
+        const real dr=KX*U1.re+KY*U2.re+KZ*U3.re, di=KX*U1.im+KY*U2.im+KZ*U3.im;
+        const real um=std::sqrt(U1.re*U1.re+U1.im*U1.im+U2.re*U2.re+U2.im*U2.im+U3.re*U3.re+U3.im*U3.im);
+        const real km=std::sqrt(KX*KX+KY*KY+KZ*KZ);
+        kdot=std::max(kdot,std::sqrt(dr*dr+di*di));
+        knorm=std::max(knorm,km*um);
+    }
+
+    // 逆变换 + 实部提取 + 往返自检（分量 0；前向变换应得 n·û）
+    std::vector<real> uu(n),vv(n),ww(n);
+    real imMax=0.0,rtDev=0.0,rtNorm=0.0;
+    for(int c=0;c<3;c++)
+    {
+        std::vector<Cpx> f=uh[c];
+        fft3dRun(f,nx,ny,nz,true);
+        for(size_t i=0;i<n;i++)
+        {
+            imMax=std::max(imMax,std::abs(f[i].im));
+            f[i].im=0.0;                                                    // 实场（虚部为舍入噪声）
+        }
+        if(c==0)
+        {
+            std::vector<Cpx> g=f;
+            fft3dRun(g,nx,ny,nz,false);
+            const real nn=(real)n;
+            for(size_t i=0;i<n;i++)
+            {
+                const real dr=g[i].re-nn*uh[0][i].re, di=g[i].im-nn*uh[0][i].im;
+                rtDev=std::max(rtDev,std::sqrt(dr*dr+di*di));
+                rtNorm=std::max(rtNorm,nn*std::sqrt(uh[0][i].re*uh[0][i].re+uh[0][i].im*uh[0][i].im));
+            }
+        }
+        for(size_t i=0;i<n;i++)
+        {
+            if(c==0) uu[i]=f[i].re;
+            else if(c==1) vv[i]=f[i].re;
+            else ww[i]=f[i].re;
+        }
+    }
+
+    // 全局归一到目标 u_rms
+    real sum2=0.0;
+    for(size_t i=0;i<n;i++) sum2+=uu[i]*uu[i]+vv[i]*vv[i]+ww[i]*ww[i];
+    const real rms0=std::sqrt(sum2/(3.0*(real)n));
+    const real sc=(rms0>0.0)? urms/rms0 : 0.0;
+    u.resize(n); v.resize(n); w.resize(n);
+    real maxu=0.0,sum2n=0.0;
+    for(size_t i=0;i<n;i++)
+    {
+        u[i]=uu[i]*sc; v[i]=vv[i]*sc; w[i]=ww[i]*sc;
+        sum2n+=u[i]*u[i]+v[i]*v[i]+w[i]*w[i];
+        maxu=std::max(maxu,std::sqrt(u[i]*u[i]+v[i]*v[i]+w[i]*w[i]));
+    }
+    const real rms1=std::sqrt(sum2n/(3.0*(real)n));
+
+    std::printf("[HIT-IC] grid=%dx%dx%d seed=%llu k0=%g u_rms target=%g\n",nx,ny,nz,seed,(double)k0,(double)urms);
+    std::printf("[HIT-IC] hermitian max|Im(iFFT)|=%.3e\n",(double)imMax);
+    std::printf("[HIT-IC] roundtrip max rel dev=%.3e\n",(double)(rtNorm>0.0? rtDev/rtNorm : 0.0));
+    std::printf("[HIT-IC] solenoidality max|k.u|=%.3e (scale %.3e)\n",(double)kdot,(double)knorm);
+    std::printf("[HIT-IC] u_rms raw=%.16e normalized=%.16e\n",(double)rms0,(double)rms1);
+    std::printf("[HIT-IC] max|u|=%.6e\n",(double)maxu);
+    std::printf("[HIT-IC] shell spectrum E_num = sc^2*shell-sum(0.5|u_hat|^2)*4*pi*k^2/N:\n");
+    std::printf("[HIT-IC]   k     N      E_num          E_target\n");
+    for(int ks=1;ks<=10;ks++)
+    {
+        real shellSum=0.0; int cnt=0;
+        for(int kz=0;kz<nz;kz++)
+        {
+            const int KZ=kidx(kz,nz);
+            for(int ky=0;ky<ny;ky++)
+            {
+                const int KY=kidx(ky,ny);
+                for(int kx=0;kx<nx;kx++)
+                {
+                    const int KX=kidx(kx,nx);
+                    const real kk=std::sqrt((real)(KX*KX+KY*KY+KZ*KZ));
+                    if(kk<(real)ks-0.5 || kk>=(real)ks+0.5) continue;
+                    const size_t idx=(size_t)kx+(size_t)ky*nx+(size_t)kz*nx*ny;
+                    const Cpx U1=uh[0][idx],U2=uh[1][idx],U3=uh[2][idx];
+                    shellSum+=0.5*(U1.re*U1.re+U1.im*U1.im+U2.re*U2.re+U2.im*U2.im+U3.re*U3.re+U3.im*U3.im);
+                    cnt++;
+                }
+            }
+        }
+        if(cnt==0) continue;
+        const real kk=(real)ks;
+        const real Enum=sc*sc*shellSum*(4.0*PI*kk*kk/(real)cnt);
+        std::printf("[HIT-IC]  %2d  %5d  %.6e  %.6e\n",ks,cnt,(double)Enum,(double)Ek(kk));
+    }
+}
+}
 
 /**
  * @brief 解初始化
@@ -740,6 +996,35 @@ void Initializer::solInit(Block* grid,Data* sol)
             if (tempsol.size()==sol->size()) sol->setValue(tempsol);
             else std::cout<<"initialize: length error \n";
             break;
+        case 5: // 可压缩均匀各向同性湍流衰减 HIT（Johnsen et al. 2010 附录 A；方案见 case_for_comment8/HIT）
+        {
+            const int nxc=grid->icMax[0], nyc=grid->icMax[1], nzc=grid->icMax[2];
+            const size_t nc=(size_t)nxc*nyc*nzc;
+            std::vector<real> velU,velV,velW;
+            hitInitialVelocity(velU,velV,velW,nxc,nyc,nzc,4.0,1.0,20260920ull);   // k0=4、u_rms=1、固定种子
+            if(velU.size()!=nc)
+            {
+                std::cout<<"HIT initialize: velocity field generation failed\n";
+                break;
+            }
+            // ρ=1；T=p/ρ=3/(0.6²γ)=5.952380952…（实现 Ma_t,0=√3·u_rms/⟨c⟩=0.6，核定见定义档 §5）
+            const real T0=3.0/(0.6*0.6*GAMMA);
+            tempsol.reserve(nc);
+            for(size_t idx=0;idx<nc;idx++)
+            {
+                const real r=1.0;
+                const real u=velU[idx], v=velV[idx], w=velW[idx];
+                const real p=r*T0;
+                tempsol.push_back(r);
+                tempsol.push_back(r*u);
+                tempsol.push_back(r*v);
+                tempsol.push_back(r*w);
+                tempsol.push_back(1.0/(GAMMA-1.0)*p + r*(u*u+v*v+w*w)/2.0);
+            }
+            if (tempsol.size()==sol->size()) sol->setValue(tempsol);
+            else std::cout<<"initialize: length error \n";
+            break;
+        }
         default:
             break;
         }
