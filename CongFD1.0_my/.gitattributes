@@ -1,0 +1,2 @@
+# 行尾统一：本仓库在 WSL/Linux 下开发，全部文本文件使用 LF
+* text=auto eol=lf
