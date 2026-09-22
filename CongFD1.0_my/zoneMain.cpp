@@ -61,29 +61,10 @@ static std::map<InterMethod,std::string> disStr={
     {TCNS5,"TENO"},
     {WCNS5CONGZ,"TENO-S"},
     {WHFTCNSA,"TENO-A"},
-    {WHFTCNSASF002,"TENO-AS-myF002"},
-    {WHFTCNSAH002,"TENO-AS-myH002"},
-    {WHFTCNSASF102,"TENO-AS-myF102"},
-    {WHFTCNSASF103,"TENO-AS-myF103"},
-    {WHFTCNSASF102_reciprocal,"TENO-AS-myF102_reciprocal"},
-    {WHFTCNSASF103_reciprocal,"TENO-AS-myF103_reciprocal"},
-    {WHFTCNSAS_fx,"TENO-AS-fx"},
-    {WHFTCNSAS_initial,"TENO-AS-initial"},
-    {WHFTCNSAS_approx_1,"TENO-AS-approx_1"},
-    {WHFTCNSAS_fx_real,"TENO-AS-fx-real"},
-    {WHFTCNSAS_approx_2,"TENO-AS-approx_2"},
-    {WHFTCNSASF202_2S,"TENO-AS-myF202_2S"},
-    {WHFTCNSASF202,"TENO-AS-myF202"},
-    {WHFTCNSASFf_5_10,"TENO-AS-Ff_5_10"},
-    {WHFTCNSASFf_5_9,"TENO-AS-Ff_5_9"},
-    {WHFTCNSASFf2_test,"TENO-AS-Ff2_test"},
-    {WHFTCNSASFf3_test,"TENO-AS-Ff3_test"},
     {WHFTCNSASFf3_5_9_time_improve,"TENO-AS-Ff3_5_9_time_improve"},
-    {temp015,"temp_name_015"},
     {WHFTCNSLADSFf2_5_10,"TENO-LADS-Ff2_5_10"},
     {WHFTCNSLAD,"TENO-LAD"},
     {WHFTCNSLADS_g1,"TENO-LADS-g1"},
-    {temp019,"temp_name_019"}
 };
 
 /**
@@ -328,45 +309,16 @@ int main()
     // info->interMethod = WCNS5CONGZ;//【TENO-S】   Teno5_CongZ
     // 临时改成5-9
     // info->interMethod = WHFTCNSA; //【TENO-A】TENO-A
-    // info->interMethod = WHFTCNSASF002;
-    // info->interMethod = WHFTCNSAH002;
-    // info->interMethod = WHFTCNSASF102;
-    // info->interMethod = WHFTCNSASF103;
-    // info->interMethod = WHFTCNSASF102_reciprocal;
-    // info->interMethod = WHFTCNSASF103_reciprocal;
-    // info->interMethod = WHFTCNSAS_fx; // 不进行函数拟合，直接用原来近似的指数形式CT'
-    // info->interMethod = WHFTCNSAS_initial; // 算CT'，原封不动的叠加A和S
-    // info->interMethod = WHFTCNSAS_approx_1; // 算CT'，叠加A和S，分母近似掉-1
-    // info->interMethod = WHFTCNSAS_fx_real; // 算
-    // info->interMethod = WHFTCNSAS_approx_2; // 具体代入，叠加A和S，分母近似掉-1
 
-    // info->interMethod = WHFTCNSASF202_2S;
-    // info->interMethod = WHFTCNSASF202;
     // 已经临时改成了1.732系数
-    info->interMethod = WHFTCNSASFf_5_10;
-    // info->interMethod = WHFTCNSASFf_5_9;
-    // info->interMethod = WHFTCNSASFf2_test;
-    // info->interMethod = WHFTCNSASFf3_test;
     // info->interMethod = WHFTCNSASFf3_5_9_time_improve; //A的 【present】
 
     // 【注意】下面这个目前不能挂机算，会炸内存！！！！！！！！！！！！！
-    // info->interMethod = temp015; //3_5_9的插值加上记录max chi的值
 
     // LAD 
     // info->interMethod = WHFTCNSLADSFf2_5_10; //
     // info->interMethod = WHFTCNSLAD;
     // info->interMethod = WHFTCNSLADS_g1; //是没进行优化的WHFTCNSLAD
-    // info->interMethod = temp019;
-    // info->interMethod = temp020;
-    // info->interMethod = temp021;
-    // info->interMethod = temp022;
-    // info->interMethod = temp023;
-    // info->interMethod = temp024;
-    // info->interMethod = temp025;
-    // info->interMethod = temp026;
-    // info->interMethod = temp027;
-    // info->interMethod = temp028;
-    // info->interMethod = temp029;
 
     // --------------------------- 算例选项 --------------------------- 
     const int presetCase = 
@@ -395,7 +347,6 @@ int main()
         int n;
         real nf;
         file >> n;                                    // 01. 读取插值方法类型，并检查有效性
-        // if (n < temp029)
             info->interMethod = (InterMethod)n;
         file >> n;                                    // 02. 设置结束时间步
             info->endStep = n;

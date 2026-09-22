@@ -46,7 +46,8 @@ enum BndType {
     SYMMETRYX,          ///< X方向对称边界（仅用于2D）
     SYMMETRYY,          ///< Y方向对称边界（仅用于2D）
     DoubleMachUp,       ///< 双马赫反射上边界
-    ARDBND              ///< ARD边界
+    ARDBND,             ///< ARD边界
+    ShockShearIn        ///< 激波/剪切层算例左入流（时变扰动）
 };
 
 /**
@@ -74,41 +75,12 @@ enum InterMethod {
     NICEST5,         // 15
     INTERMAX,        // 16
     WHFTCNSA,        // 17
-    WHFTCNSASF002,    // 18
-    WHFTCNSAH002,    // 19
-    WHFTCNSASF102,     // 20
     // 21-30
-    WHFTCNSASF103,     // 21
-    WHFTCNSASF102_reciprocal,     // 22
-    WHFTCNSASF103_reciprocal,     // 23
-    WHFTCNSAS_fx,     // 24
-    WHFTCNSAS_initial,     // 25
-    WHFTCNSAS_approx_1,     // 26
-    WHFTCNSAS_fx_real,     // 27
-    WHFTCNSAS_approx_2,     // 28
-    WHFTCNSASF202_2S,     // 29
-    WHFTCNSASF202,     // 30
     // 31-40
-    WHFTCNSASFf_5_10,     // 31
-    WHFTCNSASFf_5_9,     // 32
-    WHFTCNSASFf2_test,     // 33
-    WHFTCNSASFf3_test,     // 34
     WHFTCNSASFf3_5_9_time_improve,     // 35
-    temp015,     // 36
     WHFTCNSLADSFf2_5_10,     // 37
     WHFTCNSLAD,     // 38
     WHFTCNSLADS_g1,     // 39
-    temp019,     // 40
-    temp020,     // 41
-    temp021,     // 42
-    temp022,     // 43
-    temp023,     // 44
-    temp024,     // 45
-    temp025,     // 46
-    temp026,     // 47
-    temp027,     // 48
-    temp028,     // 49
-    temp029     // 50
 };
 
 /**

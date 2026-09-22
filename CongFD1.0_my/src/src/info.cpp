@@ -174,39 +174,10 @@ static std::map<InterMethod,std::string> disStr={
     {TCNS5,"TENO"},
     {WCNS5CONGZ,"TENO-S"},
     {WHFTCNSA,"TENO-A"},
-    {WHFTCNSASF002,"TENO-AS-myF002"},
-    {WHFTCNSAH002,"TENO-AS-myH002"},
-    {WHFTCNSASF102,"TENO-AS-myF102"},
-    {WHFTCNSASF103,"TENO-AS-myF103"},
-    {WHFTCNSASF102_reciprocal,"TENO-AS-myF102_reciprocal"},
-    {WHFTCNSASF103_reciprocal,"TENO-AS-myF103_reciprocal"},
-    {WHFTCNSAS_fx,"TENO-AS-fx"},
-    {WHFTCNSAS_initial,"TENO-AS-initial"},
-    {WHFTCNSAS_approx_1,"TENO-AS-approx_1"},
-    {WHFTCNSAS_fx_real,"TENO-AS-fx-real"},
-    {WHFTCNSAS_approx_2,"TENO-AS-approx_2"},
-    {WHFTCNSASF202_2S,"TENO-AS-myF202_2S"},
-    {WHFTCNSASF202,"TENO-AS-myF202"},
-    {WHFTCNSASFf_5_10,"TENO-AS-Ff_5_10"},
-    {WHFTCNSASFf_5_9,"TENO-AS-Ff_5_9"},
-    {WHFTCNSASFf2_test,"TENO-AS-Ff2_test"},
-    {WHFTCNSASFf3_test,"TENO-AS-Ff3_test"},
     {WHFTCNSASFf3_5_9_time_improve,"TENO-AS-Ff3_5_9_time_improve"},
-    {temp015,"temp_name_015"},
     {WHFTCNSLADSFf2_5_10,"TENO-LADS-Ff2_5_10"},
     {WHFTCNSLAD,"TENO-LAD"},
     {WHFTCNSLADS_g1,"TENO-LADS-g1"},
-    {temp019,"temp_name_019"},
-    {temp020,"temp_name_020"},
-    {temp021,"temp_name_021"},
-    {temp022,"temp_name_022"},
-    {temp023,"temp_name_023"},
-    {temp024,"temp_name_024"},
-    {temp025,"temp_name_025"},
-    {temp026,"temp_name_026"},
-    {temp027,"temp_name_027"},
-    {temp028,"temp_name_028"},
-    {temp029,"temp_name_029"}
     // 【王鸿飞】end-1命名
 };
 
@@ -219,7 +190,10 @@ static std::map<int,std::string> exampleStr1D={
     {2,"Lax"},
     {3,"sedov"},
     {4,"Woodward_Colella"},
-    {5,"Double_sparse_wave"}
+    {5,"Double_sparse_wave"},
+    {6,"EntropyMultiwave"},
+    {7,"EntropyMultiwaveScaled"},
+    {8,"DoubleBlast"}
 };
 
 /**
@@ -242,7 +216,8 @@ static std::map<int,std::string> exampleStr2D={
     {5,"2D_Riemann_Config12"},     // Configuration 12: 混合波系
     {6,"KHI"},                     // 开尔文-亥姆霍兹不稳定性(Kelvin-Helmholtz Instability)
     {7,"2D_Riemann_Config6"},      // Configuration 6: 反向涡旋结构
-    {8,"2D_TGV"}                   // 2D Taylor-Green 涡（周期；任务 8.6 code-to-code 对照用）
+    {8,"2D_TGV"},                  // 2D Taylor-Green 涡（周期；任务 8.6 code-to-code 对照用）
+    {9,"ShockShear"}               // 激波/剪切层相互作用（Peng 2019 §4.2.3；候选基准筛查用）
 };
 
 /**
