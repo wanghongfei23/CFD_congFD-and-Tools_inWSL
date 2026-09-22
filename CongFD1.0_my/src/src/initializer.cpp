@@ -259,6 +259,20 @@ inline void hitInitialVelocity(std::vector<real>& u,std::vector<real>& v,std::ve
         std::printf("[HIT-IC]  %2d  %5d  %.6e  %.6e\n",ks,cnt,(double)Enum,(double)Ek(kk));
     }
 }
+
+// 多波剖面（Peng 2021 式(31)；x∈[−1,1]；供 1D 熵波载体算例使用）
+inline real multiwaveProfile(real x)
+{
+    const real delta=0.005, alpha=10.0, a=0.5, z=-0.7;
+    const real beta=std::log(2.0)/(36.0*delta*delta);
+    auto G=[&](real xx){ const real d=xx-z; return std::exp(-beta*d*d); };
+    auto F=[&](real xx){ const real t=1.0-alpha*alpha*(xx-a)*(xx-a); return t>0.0? std::sqrt(t):0.0; };
+    if(x>=-0.8 && x<-0.6) return (G(x-delta)+G(x+delta)+4.0*G(x))/6.0;
+    if(x>=-0.4 && x<-0.2) return 1.0;
+    if(x>= 0.0 && x< 0.2) return 1.0-std::abs(10.0*(x-0.1));
+    if(x>= 0.4 && x< 0.6) return (F(x-delta)+F(x+delta)+4.0*F(x))/6.0;
+    return 0.0;
+}
 }
 
 /**
@@ -493,6 +507,59 @@ void Initializer::solInit(Block* grid,Data* sol)
             if (tempsol.size()==sol->size()) sol->setValue(tempsol);
             else std::cout<<"initialize: length error \n";
             break;
+        case 6: // 多波熵波：ρ 剖面精确平流（Peng 2021 式(31)；u=1、p 均匀，周期域）
+        {
+            tempsol.reserve(grid->icMax[0]);
+            for(int i=0;i<grid->icMax[0];i++)
+            {
+                real x=(*grid)(i,0);
+                real gamma=GAMMA;
+                real r=1.0+multiwaveProfile(x);
+                real u=1.0, p=1.0;
+                tempsol.push_back(r);
+                tempsol.push_back(r*u);
+                tempsol.push_back(1.0/(gamma-1.0)*p + r*u*u/2.0);
+            }
+            if (tempsol.size()==sol->size()) sol->setValue(tempsol);
+            else std::cout<<"initialize: length error \n";
+            break;
+        }
+        case 7: // 多波熵波·缩放变体（扰动 ×1e-3；标度不变性检验用）
+        {
+            tempsol.reserve(grid->icMax[0]);
+            for(int i=0;i<grid->icMax[0];i++)
+            {
+                real x=(*grid)(i,0);
+                real gamma=GAMMA;
+                real r=1.0+1.0e-3*multiwaveProfile(x);
+                real u=1.0, p=1.0;
+                tempsol.push_back(r);
+                tempsol.push_back(r*u);
+                tempsol.push_back(1.0/(gamma-1.0)*p + r*u*u/2.0);
+            }
+            if (tempsol.size()==sol->size()) sol->setValue(tempsol);
+            else std::cout<<"initialize: length error \n";
+            break;
+        }
+        case 8: // 双爆轰（Peng 2021 式(35)；域 [0,1]）
+        {
+            tempsol.reserve(grid->icMax[0]);
+            for(int i=0;i<grid->icMax[0];i++)
+            {
+                real x=(*grid)(i,0);
+                real gamma=GAMMA;
+                real r=1.0, u=0.0, p;
+                if(x<0.1) p=1000.0;
+                else if(x<0.9) p=0.01;
+                else p=100.0;
+                tempsol.push_back(r);
+                tempsol.push_back(r*u);
+                tempsol.push_back(1.0/(gamma-1.0)*p + r*u*u/2.0);
+            }
+            if (tempsol.size()==sol->size()) sol->setValue(tempsol);
+            else std::cout<<"initialize: length error \n";
+            break;
+        }
         /*case 0 end*/
         default:
             break;
@@ -871,6 +938,26 @@ void Initializer::solInit(Block* grid,Data* sol)
             if (tempsol.size()==sol->size()) sol->setValue(tempsol);
             else std::cout<<"initialize: length error \n";
             break;
+        case 9: // 激波/剪切层相互作用（Peng 2019 §4.2.3 式(72)-(74)；域 [0,200]x[-20,20]；下支 ρ=0.3626，Tang 2024 转录作 0.3636，从原文献）
+            tempsol.reserve(grid->icMax[0]*grid->icMax[1]);
+            for(int j=0;j<grid->icMax[1];j++)
+            for(int i=0;i<grid->icMax[0];i++)
+            {
+                int idx=i+j*grid->icMax[0];
+                real y=(*grid)(idx,1);
+                real gamma=GAMMA;
+                real r=(y>=0.0)? 1.6374 : 0.3626;
+                real u=2.5+0.5*std::tanh(2.0*y);
+                real v=0.0;
+                real p=0.3327;
+                tempsol.push_back(r);
+                tempsol.push_back(r*u);
+                tempsol.push_back(r*v);
+                tempsol.push_back(1.0/(gamma-1.0)*p + r*(u*u+v*v)/2.0);
+            }
+            if (tempsol.size()==sol->size()) sol->setValue(tempsol);
+            else std::cout<<"initialize: length error \n";
+            break;
         default:
             break;
         }
@@ -1134,6 +1221,8 @@ void Initializer::initUniformBlock(Block* block)
 
     for (int idim = 0; idim < dim; idim++)
     {
+        double cmin=info->calZone[idim*2];      // 按维原点（缺失时各维沿用 x 原点，原点不同的域单元中心坐标错位）
+        double cmax=info->calZone[idim*2+1];
         int l,m,n,iLen=(dim==1?2:dim==2? 4:8);
         std::vector<int> index;
         index.resize(iLen);
@@ -1233,13 +1322,17 @@ void Initializer::initBnds(Bnds* bnds,Equation* eqn,std::array<int,3> iMax,Block
         {
             BndType Xtype=SUPERSONICOUTLET;
             if(info->nCase==4) {Xtype=SYMMETRY1D;}
+            if(info->nCase==6||info->nCase==7) {Xtype=PERIODIC1D;}   // 多波熵波：1D 周期
             bnds->oneDBnds.at(0)=std::make_shared<OneDBnd>(nGhost,nPrim,Xtype);
-            offsets=calOffset(1,0,0,bnds->iMax);
+            // 周期边界的拷贝方向与外推/对称相反：左边界取数组尾端、右边界取数组首端
+            if(Xtype==PERIODIC1D) offsets=calOffsetInverse(1,0,0,bnds->iMax);
+            else                  offsets=calOffset(1,0,0,bnds->iMax);
             bnds->oneDBnds.at(0)->setUpdate(eqn->prim,offsets[0],offsets[1]);
 
 
             bnds->oneDBnds.at(1)=std::make_shared<OneDBnd>(nGhost,nPrim,Xtype);
-            offsets=calOffsetInverse(1,0,0,bnds->iMax);
+            if(Xtype==PERIODIC1D) offsets=calOffset(1,0,0,bnds->iMax);
+            else                  offsets=calOffsetInverse(1,0,0,bnds->iMax);
             bnds->oneDBnds.at(1)->setUpdate(eqn->prim,offsets[0],offsets[1]);
         }
         else if (eqn->dim==2)
@@ -1250,6 +1343,11 @@ void Initializer::initBnds(Bnds* bnds,Equation* eqn,std::array<int,3> iMax,Block
             if(info->nCase==4)
             {
                 initDoubleMachBnds(bnds,eqn,iMax,block);
+                break;
+            }
+            if(info->nCase==9)
+            {
+                initShockShearBnds(bnds,eqn,iMax,block);
                 break;
             }
             if(info->nCase==8)   // 2D TGV：四面全周期（任务 8.6 新增；与 3D 六面周期同型、二维化）
@@ -1438,6 +1536,53 @@ void Initializer::initDoubleMachBnds(Bnds* bnds,Equation* eqn,std::array<int,3> 
                                    block->coorCel(offsets[0],2)-block->coorCel(offsets[0]+offsets[1],2)};
             bnds->oneDBnds.at(2*i+1+iMax[1]*2)->setInfo(info);
             bnds->oneDBnds.at(2*i+1+iMax[1]*2)->setCoor(coor,dh);
+        }
+}
+
+void Initializer::initShockShearBnds(Bnds* bnds,Equation* eqn,std::array<int,3> iMax,Block* block)
+{
+        std::array<int,2> offsets;
+        int nGhost=info->nGhostCell();
+        int nPrim=info->nPrim();
+        // X 向：左=带时变扰动的入流，右=超声速出口
+        for (int i = 0; i < iMax[1]; i++)
+        {
+            offsets=calOffset(1,i,0,bnds->iMax);
+            bnds->oneDBnds.at(2*i)=std::make_shared<OneDBnd>(nGhost,nPrim,ShockShearIn);
+            bnds->oneDBnds.at(2*i)->setUpdate(eqn->prim,offsets[0],offsets[1]);
+
+            std::array<real,3> coor={block->coorCel(offsets[0],0),
+                                    block->coorCel(offsets[0],1),
+                                    block->coorCel(offsets[0],2)};
+            std::array<real,3> dh={block->coorCel(offsets[0],0)-block->coorCel(offsets[0]+offsets[1],0),
+                                   block->coorCel(offsets[0],1)-block->coorCel(offsets[0]+offsets[1],1),
+                                   block->coorCel(offsets[0],2)-block->coorCel(offsets[0]+offsets[1],2)};
+            bnds->oneDBnds.at(2*i)->setInfo(info);
+            bnds->oneDBnds.at(2*i)->setCoor(coor,dh);
+
+            offsets=calOffsetInverse(1,i,0,bnds->iMax);
+            bnds->oneDBnds.at(2*i+1)=std::make_shared<OneDBnd>(nGhost,nPrim,SUPERSONICOUTLET);
+            bnds->oneDBnds.at(2*i+1)->setUpdate(eqn->prim,offsets[0],offsets[1]);
+        }
+
+        // Y 向：下=滑移固壁（对称镜像），上=后激波态（固定值）
+        for (int i = 0; i < iMax[0]; i++)
+        {
+            offsets=calOffset(2,i,0,bnds->iMax);
+            bnds->oneDBnds.at(2*i+iMax[1]*2)=std::make_shared<OneDBnd>(nGhost,nPrim,SYMMETRYY);
+            bnds->oneDBnds.at(2*i+iMax[1]*2)->setUpdate(eqn->prim,offsets[0],offsets[1]);
+
+            offsets=calOffsetInverse(2,i,0,bnds->iMax);
+            bnds->oneDBnds.at(2*i+1+iMax[1]*2)=std::make_shared<OneDBnd>(nGhost,nPrim,DIRICLET);
+            bnds->oneDBnds.at(2*i+1+iMax[1]*2)->setUpdate(eqn->prim,offsets[0],offsets[1]);
+
+            std::array<real,4> dirVar={2.1101,2.9709,-0.1367,0.4754};
+            std::vector<real> dirVars(nGhost*nPrim);
+            for(int j=0;j<nGhost;j++) {
+                dirVars.at(j*nPrim+0)=dirVar[0];dirVars.at(j*nPrim+1)=dirVar[1];
+                dirVars.at(j*nPrim+2)=dirVar[2];dirVars.at(j*nPrim+3)=dirVar[3];
+            }
+            bnds->oneDBnds.at(2*i+1+iMax[1]*2)->setValue(dirVars);
         }
 }
 

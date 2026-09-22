@@ -172,7 +172,25 @@ void OneDBnd::update()
         }
         }
         break;
-    
+    case ShockShearIn:
+        //only for 2D：激波/剪切层算例左入流（Peng 2019 §4.2.3 式(72)-(74)：基态 + 时变扰动 v'）
+        {
+        for (int i = 0; i < n; i++)
+        {
+            real y=coor[1];
+            real rho=(y>=0.0)? 1.6374 : 0.3626;
+            real u=2.5+0.5*std::tanh(2.0*y);
+            real T=30.0/2.68;
+            real vp=0.05*std::cos(2.0*M_PI*info->t/T)*std::exp(-y*y/10.0)
+                   +0.05*std::cos(4.0*M_PI*info->t/T+M_PI/2.0)*std::exp(-y*y/10.0);
+                data[i*nVar+0]=rho;
+                data[i*nVar+1]=u;
+                data[i*nVar+2]=vp;
+                data[i*nVar+3]=0.3327;
+        }
+        }
+        break;
+
     default:
         break;
     }

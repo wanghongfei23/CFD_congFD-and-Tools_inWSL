@@ -68,6 +68,15 @@ class Initializer
     void initDoubleMachBnds(Bnds* bnds,Equation* eqn,std::array<int,3> iMax,Block* block);
 
     /**
+     * @brief 初始化激波/剪切层相互作用问题边界条件
+     * @param bnds 边界条件管理器指针
+     * @param eqn 方程对象指针
+     * @param iMax 网格最大索引数组
+     * @param block 网格块指针
+     */
+    void initShockShearBnds(Bnds* bnds,Equation* eqn,std::array<int,3> iMax,Block* block);
+
+    /**
      * @brief 初始化空间分布器
      * @param 第一个参数 空间分布器指针
      * @param 第二个参数 方程对象指针
